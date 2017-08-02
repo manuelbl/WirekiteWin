@@ -99,6 +99,12 @@ namespace Codecrete.Wirekite.Device
                 response.Read(buffer, 0);
                 HandleConfigResponse(response);
             }
+            else if (messageType == Message.MessageTypePortEvent)
+            {
+                PortEvent evt = new PortEvent();
+                evt.Read(buffer, 0);
+                HandlePortEvent(evt);
+            }
             else
             {
                 throw new WirekiteException(String.Format("Invalid message type ({0}) received", messageType));
@@ -109,6 +115,28 @@ namespace Codecrete.Wirekite.Device
         private void HandleConfigResponse(ConfigResponse response)
         {
             _pendingResponses.PutResponse(response.RequestId, response);
+        }
+
+
+        private void HandlePortEvent(PortEvent evt)
+        {
+            Port port = _ports.GetPort(evt.PortId);
+            if (port == null)
+                throw new WirekiteException(String.Format("Port event received for invalid port ID {0}", evt.PortId));
+
+            PortType type = port.Type;
+            switch (type)
+            {
+                case PortType.DigitalInputOnDemand:
+                case PortType.DigitalInputPrecached:
+                case PortType.DigitalInputTriggering:
+                case PortType.DigitalOutput:
+                    HandleDigitalPinEvent(evt);
+                    break;
+
+                default:
+                    throw new WirekiteException(String.Format("Port event received for invalid for type {0} of port ID {1}", type, evt.PortId));
+            }
         }
 
 

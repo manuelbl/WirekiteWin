@@ -31,6 +31,8 @@ namespace Codecrete.Wirekite.Test.UI
         private ushort _orangeLED;
         private ushort _greenLED;
 
+        private ushort _switchPort;
+
 
         public MainWindow()
         {
@@ -59,6 +61,19 @@ namespace Codecrete.Wirekite.Test.UI
             _redLED = device.ConfigureDigitalOutputPin(16, DigitalOutputPinAttributes.HighCurrent);
             _orangeLED = device.ConfigureDigitalOutputPin(17, DigitalOutputPinAttributes.HighCurrent);
             _greenLED = device.ConfigureDigitalOutputPin(21, DigitalOutputPinAttributes.HighCurrent);
+
+            _switchPort = device.ConfigureDigitalInputPin(12, DigitalInputPinAttributes.Pullup | DigitalInputPinAttributes.TriggerRaising | DigitalInputPinAttributes.TriggerFalling, (port, value) =>
+            {
+                Dispatcher.Invoke(new Action(() => { SetSwitchDisplay(value); }));
+            });
+            SetSwitchDisplay(device.ReadDigitalPin(_switchPort));
+        }
+
+
+        private void SetSwitchDisplay(bool value)
+        {
+            SolidColorBrush brush = value ? Brushes.Crimson : Brushes.LightGray;
+            buttonDisplay.Fill = brush;
         }
 
 

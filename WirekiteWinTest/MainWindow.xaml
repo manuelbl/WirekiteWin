@@ -10,6 +10,7 @@
         <CheckBox x:Name="redCheckBox" Content="Red" HorizontalAlignment="Left" Margin="343,46,0,0" VerticalAlignment="Top" Checked="ledCheckBox_Changed" Unchecked="ledCheckBox_Changed"/>
         <CheckBox x:Name="orangeCheckBox" Content="Orange" HorizontalAlignment="Left" Margin="343,66,0,0" VerticalAlignment="Top" Checked="ledCheckBox_Changed" Unchecked="ledCheckBox_Changed"/>
         <CheckBox x:Name="greenCheckBox" Content="Green" HorizontalAlignment="Left" Margin="343,86,0,0" VerticalAlignment="Top" Checked="ledCheckBox_Changed" Unchecked="ledCheckBox_Changed"/>
+        <Ellipse x:Name="buttonDisplay" Fill="#FFFF4747" HorizontalAlignment="Left" Height="40" Margin="265,46,0,0" VerticalAlignment="Top" Width="40"/>
 
     </Grid>
 </Window>

@@ -45,6 +45,7 @@
     <Compile Include="Messages\ConfigResponse.cs" />
     <Compile Include="Messages\Constants.cs" />
     <Compile Include="Messages\Message.cs" />
+    <Compile Include="Messages\PortEvent.cs" />
     <Compile Include="Messages\PortRequest.cs" />
     <Compile Include="PendingResponseList.cs" />
     <Compile Include="Port.cs" />

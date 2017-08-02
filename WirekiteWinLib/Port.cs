@@ -28,15 +28,25 @@ namespace Codecrete.Wirekite.Device
         internal UInt16 Id { get; private set; }
         internal PortType Type { get; private set; }
 
-        private UInt16 _lastSample;
-        private BlockingCollection<Message> _eventQueue;
+        internal UInt16 LastSample;
+        private BlockingCollection<PortEvent> _eventQueue;
 
 
         internal Port(UInt16 id, PortType type, int queueLength)
         {
             Id = id;
             Type = type;
-            _eventQueue = new BlockingCollection<Message>(queueLength);
+            _eventQueue = new BlockingCollection<PortEvent>(queueLength);
+        }
+
+        internal void PushEvent(PortEvent evt)
+        {
+            _eventQueue.TryAdd(evt);
+        }
+
+        internal PortEvent WaitForEvent()
+        {
+            return _eventQueue.Take();
         }
     }
 }

@@ -33,11 +33,11 @@ namespace Codecrete.Wirekite.Device
             }
         }
 
-        internal void RemovePort(Port port)
+        internal void RemovePort(UInt16 portId)
         {
             lock (_synch)
             {
-                _ports.Remove(port.Id);
+                _ports.Remove(portId);
             }
         }
 
