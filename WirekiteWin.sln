@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WirekiteWinTest", "WirekiteWinTest\WirekiteWinTest.csproj", "{973A2298-74C5-4715-860E-E82174D6E8F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WirekiteWinLib", "WirekiteWinLib\WirekiteWinLib.csproj", "{A7742E90-B142-41AE-A14A-A46AC960E500}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{973A2298-74C5-4715-860E-E82174D6E8F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{973A2298-74C5-4715-860E-E82174D6E8F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{973A2298-74C5-4715-860E-E82174D6E8F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{973A2298-74C5-4715-860E-E82174D6E8F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7742E90-B142-41AE-A14A-A46AC960E500}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7742E90-B142-41AE-A14A-A46AC960E500}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7742E90-B142-41AE-A14A-A46AC960E500}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7742E90-B142-41AE-A14A-A46AC960E500}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
