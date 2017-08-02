@@ -7,6 +7,9 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
-        
+        <CheckBox x:Name="redCheckBox" Content="Red" HorizontalAlignment="Left" Margin="343,46,0,0" VerticalAlignment="Top" Checked="ledCheckBox_Changed" Unchecked="ledCheckBox_Changed"/>
+        <CheckBox x:Name="orangeCheckBox" Content="Orange" HorizontalAlignment="Left" Margin="343,66,0,0" VerticalAlignment="Top" Checked="ledCheckBox_Changed" Unchecked="ledCheckBox_Changed"/>
+        <CheckBox x:Name="greenCheckBox" Content="Green" HorizontalAlignment="Left" Margin="343,86,0,0" VerticalAlignment="Top" Checked="ledCheckBox_Changed" Unchecked="ledCheckBox_Changed"/>
+
     </Grid>
 </Window>

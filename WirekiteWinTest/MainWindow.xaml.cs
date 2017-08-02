@@ -24,8 +24,12 @@ namespace Codecrete.Wirekite.Test.UI
     {
         private WirekiteDevice _device;
         private Timer _timer;
-        private ushort _ledPort;
+        private ushort _builtinLED;
         private bool _ledOn = false;
+
+        private ushort _redLED;
+        private ushort _orangeLED;
+        private ushort _greenLED;
 
 
         public MainWindow()
@@ -43,20 +47,38 @@ namespace Codecrete.Wirekite.Test.UI
         public void Blink(Object stateInfo)
         {
             _ledOn = !_ledOn;
-            _device.WriteDigitalPin(_ledPort, _ledOn);
+            _device.WriteDigitalPin(_builtinLED, _ledOn);
         }
 
         public void OnDeviceAdded(WirekiteDevice device)
         {
             _device = device;
             _device.ResetConfiguration();
-            _ledPort = device.ConfigureDigitalOutputPin(13, DigitalOutputPinAttributes.Default);
+            _builtinLED = device.ConfigureDigitalOutputPin(13, DigitalOutputPinAttributes.Default);
+
+            _redLED = device.ConfigureDigitalOutputPin(16, DigitalOutputPinAttributes.HighCurrent);
+            _orangeLED = device.ConfigureDigitalOutputPin(17, DigitalOutputPinAttributes.HighCurrent);
+            _greenLED = device.ConfigureDigitalOutputPin(21, DigitalOutputPinAttributes.HighCurrent);
         }
 
 
         public void OnDeviceRemoved(WirekiteDevice device)
         {
 
+        }
+
+
+        private void ledCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            ushort led;
+            if (sender == redCheckBox)
+                led = _redLED;
+            else if (sender == orangeCheckBox)
+                led = _orangeLED;
+            else
+                led = _greenLED;
+
+            _device.WriteDigitalPin(led, ((CheckBox)sender).IsChecked.Value);
         }
     }
 }
