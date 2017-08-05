@@ -148,7 +148,7 @@ namespace Codecrete.Wirekite.Device
         {
             Port port = _ports.GetPort(evt.PortId);
 
-            if (evt.Action == Message.EventSingleSample)
+            if (evt.Event == Message.EventSingleSample)
             {
                 PortType type = port.Type;
                 if (type == PortType.DigitalInputOnDemand)
