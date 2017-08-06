@@ -6,12 +6,9 @@
  */
 
 using System;
-using Codecrete.Wirekite.Device.Internal;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using static Codecrete.Wirekite.Device.Internal.Setup;
-using static Codecrete.Wirekite.Device.Internal.Win32;
-using static Codecrete.Wirekite.Device.Internal.WinUsb;
+using static Codecrete.Wirekite.Device.NativeMethods;
 using System.Windows;
 using System.Windows.Interop;
 using System.Collections.Generic;
@@ -62,7 +59,7 @@ namespace Codecrete.Wirekite.Device
         private void FindDevices()
         {
             IntPtr deviceInfoSet = SetupDiGetClassDevs(ref _interfaceGuid, IntPtr.Zero, IntPtr.Zero, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-            if (deviceInfoSet == Win32.INVALID_HANDLE_VALUE)
+            if (deviceInfoSet == INVALID_HANDLE_VALUE)
                 WirekiteException.ThrowWin32Exception("Failed to enumerate Wirekite devices");
 
             try
@@ -193,7 +190,7 @@ namespace Codecrete.Wirekite.Device
 
             foreach (WirekiteDevice device in _devices)
             {
-                if (device.DevicePath == devicePath)
+                if (String.Equals(device.DevicePath, devicePath, StringComparison.OrdinalIgnoreCase))
                 {
                     if (deviceNotification != null)
                         deviceNotification.OnDeviceDisconnected(device);
@@ -261,6 +258,11 @@ namespace Codecrete.Wirekite.Device
                     }
                 }
 
+                while (_devices.Count > 0)
+                {
+                    _devices[_devices.Count - 1].Close();
+                }
+
                 isDisposed = true;
             }
         }
@@ -270,7 +272,6 @@ namespace Codecrete.Wirekite.Device
             Dispose(false);
         }
 
-        // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.

@@ -23,7 +23,7 @@ namespace Codecrete.Wirekite.Device
     }
 
 
-    internal class Port
+    internal class Port : IDisposable
     {
         internal UInt16 Id { get; private set; }
         internal PortType Type { get; private set; }
@@ -48,5 +48,28 @@ namespace Codecrete.Wirekite.Device
         {
             return _eventQueue.Take();
         }
+
+        #region IDisposable Support
+        private bool _isDisposed = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    _eventQueue.Dispose();
+                }
+
+                _isDisposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+        #endregion
     }
 }

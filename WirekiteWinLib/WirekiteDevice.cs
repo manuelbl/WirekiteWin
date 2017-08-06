@@ -11,8 +11,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
-using static Codecrete.Wirekite.Device.Internal.Win32;
-using static Codecrete.Wirekite.Device.Internal.WinUsb;
+using static Codecrete.Wirekite.Device.NativeMethods;
 
 
 namespace Codecrete.Wirekite.Device
@@ -50,6 +49,8 @@ namespace Codecrete.Wirekite.Device
             if (_isClosed)
                 return;
 
+            _ports.Clear();
+            _pendingResponses.Clear();
             _service.RemoveDevice(this);
             WinUsb_Free(_interfaceHandle);
             _interfaceHandle = IntPtr.Zero;
@@ -66,9 +67,11 @@ namespace Codecrete.Wirekite.Device
             NativeOverlapped* nativeOverlapped = overlapped.Pack(ReadComplete, _rxBuffer);
             bool success;
             UInt32 numBytes;
+            int errorCode;
             fixed (byte* buf = _rxBuffer)
             {
                 success = WinUsb_ReadPipe(_interfaceHandle, RxEndpointAddress, buf, (UInt32)_rxBuffer.Length, out numBytes, nativeOverlapped);
+                errorCode = Marshal.GetLastWin32Error();
             }
 
             if (success)
@@ -78,7 +81,7 @@ namespace Codecrete.Wirekite.Device
             }
             else
             {
-                if (Marshal.GetLastWin32Error() != ERROR_IO_PENDING)
+                if (errorCode != ERROR_IO_PENDING)
                 {
                     Overlapped.Unpack(nativeOverlapped);
                     Overlapped.Free(nativeOverlapped);
@@ -200,9 +203,11 @@ namespace Codecrete.Wirekite.Device
                 NativeOverlapped* nativeOverlapped = overlapped.Pack(WriteComplete, buffer);
                 bool success;
                 UInt32 numBytes;
+                int errorCode;
                 fixed (byte* buf = buffer)
                 {
                     success = WinUsb_WritePipe(_interfaceHandle, TxEndpointAddress, buf, (UInt32)messageSize, out numBytes, nativeOverlapped);
+                    errorCode = Marshal.GetLastWin32Error();
                 }
 
                 if (success)
@@ -212,7 +217,6 @@ namespace Codecrete.Wirekite.Device
                 }
                 else
                 {
-                    int errorCode = Marshal.GetLastWin32Error();
                     if (errorCode != ERROR_IO_PENDING)
                     {
                         Overlapped.Unpack(nativeOverlapped);

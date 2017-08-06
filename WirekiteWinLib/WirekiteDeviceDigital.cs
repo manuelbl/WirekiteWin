@@ -57,6 +57,9 @@ namespace Codecrete.Wirekite.Device
             SendConfigRequest(request);
             DigitalInputCallback callback;
             _digitalInputCallbacks.TryRemove(port, out callback);
+            Port p = _ports.GetPort(port);
+            if (p != null)
+                p.Dispose();
             _ports.RemovePort(port);
         }
 

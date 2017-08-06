@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 
 namespace Codecrete.Wirekite.Device
 {
+    [Serializable]
     class WirekiteException : Exception
     {
         public WirekiteException(string message)

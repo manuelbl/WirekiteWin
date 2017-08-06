@@ -45,6 +45,10 @@ namespace Codecrete.Wirekite.Device
         {
             lock (_synch)
             {
+                foreach (var kv in _ports)
+                {
+                    kv.Value.Dispose();
+                }
                 _ports.Clear();
             }
         }
