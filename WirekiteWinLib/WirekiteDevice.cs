@@ -16,6 +16,14 @@ using static Codecrete.Wirekite.Device.NativeMethods;
 
 namespace Codecrete.Wirekite.Device
 {
+    internal enum DeviceState
+    {
+        Initializing,
+        Ready,
+        Closed
+    }
+
+
     /// <summary>
     /// Wirekite device
     /// </summary>
@@ -33,7 +41,7 @@ namespace Codecrete.Wirekite.Device
         internal String DevicePath { get; private set; }
         private SafeFileHandle _deviceHandle;
         private IntPtr _interfaceHandle;
-        private bool _isClosed = false;
+        private DeviceState _deviceState = DeviceState.Initializing;
         private byte[] _rxBuffer;
 
         private PendingResponseList _pendingResponses = new PendingResponseList();
@@ -49,6 +57,8 @@ namespace Codecrete.Wirekite.Device
             ThreadPool.BindHandle(_deviceHandle);
 
             SubmitReadRequest();
+            ResetConfiguration();
+            _deviceState = DeviceState.Ready;
         }
 
 
@@ -61,7 +71,7 @@ namespace Codecrete.Wirekite.Device
         /// </remarks>
         public void Close()
         {
-            if (_isClosed)
+            if (_deviceState == DeviceState.Closed)
                 return;
 
             _ports.Clear();
@@ -71,7 +81,7 @@ namespace Codecrete.Wirekite.Device
             _interfaceHandle = IntPtr.Zero;
             _deviceHandle.Dispose();
             _deviceHandle = null;
-            _isClosed = true;
+            _deviceState = DeviceState.Closed;
         }
 
 
@@ -120,7 +130,7 @@ namespace Codecrete.Wirekite.Device
             if (errorCode != 0)
                 throw new WirekiteException("Error on reading data from device", new Win32Exception((int)errorCode));
 
-            if (!_isClosed)
+            if (_deviceState != DeviceState.Closed)
                 SubmitReadRequest();
 
             HandleInput(buffer, (int)numBytes);
@@ -134,13 +144,15 @@ namespace Codecrete.Wirekite.Device
             {
                 ConfigResponse response = new ConfigResponse();
                 response.Read(buffer, 0);
-                HandleConfigResponse(response);
+                if (_deviceState == DeviceState.Ready || response.RequestId == 0xffff)
+                    HandleConfigResponse(response);
             }
             else if (messageType == Message.MessageTypePortEvent)
             {
                 PortEvent evt = new PortEvent();
                 evt.Read(buffer, 0);
-                HandlePortEvent(evt);
+                if (_deviceState == DeviceState.Ready)
+                    HandlePortEvent(evt);
             }
             else
             {
@@ -171,6 +183,11 @@ namespace Codecrete.Wirekite.Device
                     HandleDigitalPinEvent(evt);
                     break;
 
+                case PortType.AnalogInputOnDemand:
+                case PortType.AnalogInputSampling:
+                    HandleAnalogPinEvent(evt);
+                    break;
+
                 default:
                     throw new WirekiteException(String.Format("Port event received for invalid for type {0} of port ID {1}", type, evt.PortId));
             }
@@ -186,7 +203,11 @@ namespace Codecrete.Wirekite.Device
         /// </remarks>
         public void ResetConfiguration()
         {
-            ConfigRequest request = new ConfigRequest { Action = Message.ConfigActionReset };
+            ConfigRequest request = new ConfigRequest
+            {
+                Action = Message.ConfigActionReset,
+                PortOrRequestId = 0xffff
+            };
 
             SendConfigRequest(request);
 
@@ -196,7 +217,7 @@ namespace Codecrete.Wirekite.Device
 
         private ConfigResponse SendConfigRequest(ConfigRequest request)
         {
-            if (request.PortOrRequestId != 0)
+            if (request.PortOrRequestId == 0)
                 request.PortOrRequestId = _ports.NextRequestId();
             WriteMessage(request);
             ConfigResponse response = _pendingResponses.WaitForResponse(request.PortOrRequestId) as ConfigResponse;
@@ -279,7 +300,7 @@ namespace Codecrete.Wirekite.Device
         /// <param name="disposing">Indicates if this method is called from <c>Dispose()</c></param>
         protected virtual void Dispose(bool disposing)
         {
-            if (_isClosed)
+            if (_deviceState == DeviceState.Closed)
                 return;
 
             Close();

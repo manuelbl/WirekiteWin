@@ -3,14 +3,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wk="clr-namespace:Codecrete.Wirekite.Test.UI"
         xmlns:local="clr-namespace:WirekiteWinTest"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
-        <CheckBox x:Name="redCheckBox" Content="Red" HorizontalAlignment="Left" Margin="343,46,0,0" VerticalAlignment="Top" Checked="ledCheckBox_Changed" Unchecked="ledCheckBox_Changed"/>
-        <CheckBox x:Name="orangeCheckBox" Content="Orange" HorizontalAlignment="Left" Margin="343,66,0,0" VerticalAlignment="Top" Checked="ledCheckBox_Changed" Unchecked="ledCheckBox_Changed"/>
-        <CheckBox x:Name="greenCheckBox" Content="Green" HorizontalAlignment="Left" Margin="343,86,0,0" VerticalAlignment="Top" Checked="ledCheckBox_Changed" Unchecked="ledCheckBox_Changed"/>
+        <CheckBox x:Name="redCheckBox" Content="Red" HorizontalAlignment="Left" Margin="343,46,0,0" VerticalAlignment="Top" Checked="LedCheckBox_Changed" Unchecked="LedCheckBox_Changed"/>
+        <CheckBox x:Name="orangeCheckBox" Content="Orange" HorizontalAlignment="Left" Margin="343,66,0,0" VerticalAlignment="Top" Checked="LedCheckBox_Changed" Unchecked="LedCheckBox_Changed"/>
+        <CheckBox x:Name="greenCheckBox" Content="Green" HorizontalAlignment="Left" Margin="343,86,0,0" VerticalAlignment="Top" Checked="LedCheckBox_Changed" Unchecked="LedCheckBox_Changed"/>
         <Ellipse x:Name="buttonDisplay" Fill="#FFFF4747" HorizontalAlignment="Left" Height="40" Margin="265,46,0,0" VerticalAlignment="Top" Width="40"/>
-
+        <Label x:Name="frequencyLabel" Content="Frequency" HorizontalAlignment="Left" Margin="10,43,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="frequencyValueLabel" Content="- Hz" HorizontalAlignment="Left" Margin="10,69,0,0" VerticalAlignment="Top" FontSize="16" Width="100"/>
+        <Label x:Name="dutyCycleLabel" Content="DutyCycle" HorizontalAlignment="Left" Margin="115,43,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="dutyCycleValueLabel" Content="- %" HorizontalAlignment="Left" Margin="115,69,0,0" VerticalAlignment="Top" FontSize="16" Width="100"/>
+        <wk:AnalogStick x:Name="analogStick" Margin="343,146,64,63.8" XDirection="0" YDirection="0"/>
     </Grid>
 </Window>

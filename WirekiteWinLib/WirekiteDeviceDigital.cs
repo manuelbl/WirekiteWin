@@ -192,7 +192,8 @@ namespace Codecrete.Wirekite.Device
         /// <returns>the port ID of the configured digital input</returns>
         /// <remarks>
         /// The <paramref name="attributes"/> must specify whether the notification should be triggered on
-        /// the raising edge, the falling edge or both edges of the signal.
+        /// the raising edge, the falling edge or both edges of the signal. The notification delegate is
+        /// called on a background thread.
         /// </remarks>
         public UInt16 ConfigureDigitalInputPin(int pin, DigitalInputPinAttributes attributes, DigitalInputCallback callback)
         {

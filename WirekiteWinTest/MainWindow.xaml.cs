@@ -1,4 +1,11 @@
-﻿using Codecrete.Wirekite.Device;
+﻿/*
+ * Wirekite for Windows 
+ * Copyright (c) 2017 Manuel Bleichenbacher
+ * Licensed under MIT License
+ * https://opensource.org/licenses/MIT
+ */
+
+using Codecrete.Wirekite.Device;
 using System;
 using System.Threading;
 using System.Windows;
@@ -24,7 +31,17 @@ namespace Codecrete.Wirekite.Test.UI
         private ushort _orangeLED;
         private ushort _greenLED;
 
+        private ushort _dutyCyclePin;
+        private ushort _frequencyPin;
+        private int _prevFrequencyValue;
+
         private ushort _switchPort;
+
+        private ushort _voltageXPin;
+        private ushort _voltageYPin;
+        private ushort _stickSwitchPin;
+        private Brush _stickPressedColor = Brushes.Orange;
+        private Brush _stickReleasedColor = Brushes.LightGray;
 
 
         public MainWindow()
@@ -59,9 +76,56 @@ namespace Codecrete.Wirekite.Test.UI
 
             _switchPort = device.ConfigureDigitalInputPin(12, DigitalInputPinAttributes.Pullup | DigitalInputPinAttributes.TriggerRaising | DigitalInputPinAttributes.TriggerFalling, (port, value) =>
             {
-                Dispatcher.Invoke(new Action(() => { SetSwitchDisplay(value); }));
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    SetSwitchDisplay(value);
+                }));
             });
             SetSwitchDisplay(device.ReadDigitalPin(_switchPort));
+
+            _dutyCyclePin = device.ConfigureAnalogInputPin(AnalogPin.A4, 127, (port, value) => {
+                string text = String.Format("{0:##0.0} %", value * 100 / 32767.0);
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    dutyCycleValueLabel.Content = text;
+                }));
+            });
+
+            _frequencyPin = device.ConfigureAnalogInputPin(AnalogPin.A1, 149, (port, value) => {
+                if (Math.Abs(value - _prevFrequencyValue) > 100) {
+                    _prevFrequencyValue = value;
+                    int frequency = (int)((Math.Exp(Math.Exp(value / 32767.0)) - Math.Exp(1)) * 900 + 10);
+                    string text = String.Format("{0} Hz", frequency);
+                    Dispatcher.Invoke(new Action(() =>
+                    {
+                        frequencyValueLabel.Content = text;
+                    }));
+                }
+            });
+
+            _voltageXPin = device.ConfigureAnalogInputPin(AnalogPin.A8, 137, (port, value) => {
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    analogStick.XDirection = 1.0 - value / 16383.0;
+                }));
+            });
+            _voltageYPin = device.ConfigureAnalogInputPin(AnalogPin.A9, 139, (port, value) => {
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    analogStick.YDirection = 1.0 - value / 16383.0;
+                }));
+            });
+
+
+            _stickSwitchPin = device.ConfigureDigitalInputPin(20,
+                DigitalInputPinAttributes.TriggerRaising | DigitalInputPinAttributes.TriggerFalling | DigitalInputPinAttributes.Pullup,
+                (port, value) => {
+                    Dispatcher.Invoke(new Action(() =>
+                    {
+                        analogStick.Foreground = value ? _stickReleasedColor : _stickPressedColor;
+                    }));
+            });
+            analogStick.Foreground = device.ReadDigitalPin(_stickSwitchPin) ? _stickReleasedColor : _stickPressedColor;
 
             _timer = new Timer(Blink, null, 300, 500);
         }
@@ -87,7 +151,7 @@ namespace Codecrete.Wirekite.Test.UI
         }
 
 
-        private void ledCheckBox_Changed(object sender, RoutedEventArgs e)
+        private void LedCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             if (_device == null)
                 return; // this event is even fired if the checkbox is changed programmatically
