@@ -1,4 +1,4 @@
-﻿/**
+﻿/*
  * Wirekite for Windows 
  * Copyright (c) 2017 Manuel Bleichenbacher
  * Licensed under MIT License
@@ -16,6 +16,14 @@ using static Codecrete.Wirekite.Device.NativeMethods;
 
 namespace Codecrete.Wirekite.Device
 {
+    /// <summary>
+    /// Wirekite device
+    /// </summary>
+    /// <remarks>
+    /// Main class for interacting with the Wirekite device.
+    /// Instances of this class cannot be created directly. Instead, the Wirekit service creates
+    /// them when they are plugged in or when the service instance is created.</remarks>
+    /// <seealso cref="WirekiteService">The Wirekite service listening to devices being connected or disconnected</seealso>
     public partial class WirekiteDevice : IDisposable
     {
         private const Byte RxEndpointAddress = 0x81; // endpoint 1 / IN
@@ -44,6 +52,13 @@ namespace Codecrete.Wirekite.Device
         }
 
 
+        /// <summary>
+        /// Closes the Wirekite devices.
+        /// </summary>
+        /// <remarks>
+        /// A closed device can no longer be used. It must be disconnected and connected again,
+        /// or the Wirekite service must be restarted.
+        /// </remarks>
         public void Close()
         {
             if (_isClosed)
@@ -162,10 +177,16 @@ namespace Codecrete.Wirekite.Device
         }
 
 
+        /// <summary>
+        /// Resets the device to is initial configuration.
+        /// </summary>
+        /// <remarks>
+        /// After the reset, all configured ports are invalid and all pins and
+        /// modules are available for use again.
+        /// </remarks>
         public void ResetConfiguration()
         {
-            ConfigRequest request = new ConfigRequest();
-            request.Action = Message.ConfigActionReset;
+            ConfigRequest request = new ConfigRequest { Action = Message.ConfigActionReset };
 
             SendConfigRequest(request);
 
@@ -244,11 +265,18 @@ namespace Codecrete.Wirekite.Device
         }
 
 
+        /// <summary>
+        /// Finalizes this instance.
+        /// </summary>
         ~WirekiteDevice()
         {
             Dispose(false);
         }
 
+        /// <summary>
+        /// Disposes of all resources linked to this device.
+        /// </summary>
+        /// <param name="disposing">Indicates if this method is called from <c>Dispose()</c></param>
         protected virtual void Dispose(bool disposing)
         {
             if (_isClosed)
@@ -257,6 +285,10 @@ namespace Codecrete.Wirekite.Device
             Close();
         }
 
+
+        /// <summary>
+        /// Disposes of all resources linked to this device.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);

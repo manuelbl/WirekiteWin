@@ -1,4 +1,4 @@
-﻿/**
+﻿/*
  * Wirekite for Windows 
  * Copyright (c) 2017 Manuel Bleichenbacher
  * Licensed under MIT License
@@ -15,18 +15,43 @@ using System.Collections.Generic;
 
 namespace Codecrete.Wirekite.Device
 {
+    /// <summary>
+    /// Interface to be implemented by classes that receive notifications about connected and disconnected Wirekite devices.
+    /// </summary>
     public interface IWirekiteDeviceNotification
     {
+        /// <summary>
+        /// Called when a device has been connected and initially when the <see cref="WirekiteService"/> is created.
+        /// </summary>
+        /// <param name="device">the connected device</param>
         void OnDeviceConnected(WirekiteDevice device);
+        /// <summary>
+        /// Called when a device has been disconnected.
+        /// </summary>
+        /// <param name="device">the disconnected device</param>
+        /// <remarks>
+        /// The device is already closed and all configured ports are invalid.
+        /// </remarks>
         void OnDeviceDisconnected(WirekiteDevice device);
     }
 
 
+
+    /// <summary>
+    /// Service to notify about connected and disconnected devices.
+    /// </summary>
+    /// <remarks>
+    /// When an instance of this class is created, it immediately notifies about
+    /// the already connected devices.
+    /// </remarks>
     public class WirekiteService : IDisposable
     {
+        /// <summary>
+        /// The GUID of the USB interface of the Wirekite device.
+        /// </summary>
         public static readonly Guid WirekiteInterfaceGuid = new Guid("{d010ba90-025a-4c94-b2db-a13f205d437e}");
 
-        public IWirekiteDeviceNotification deviceNotification;
+        private IWirekiteDeviceNotification _deviceNotification;
 
         private Guid _interfaceGuid = new Guid(WirekiteInterfaceGuid.ToByteArray());
         private HwndSource _hwndSource;
@@ -35,9 +60,15 @@ namespace Codecrete.Wirekite.Device
         private List<WirekiteDevice> _devices = new List<WirekiteDevice>();
 
 
+        /// <summary>
+        /// Constructs an instance
+        /// </summary>
+        /// <param name="notification">the object to be notified about connected and disconnected Wirekite devices</param>
+        /// <param name="wpfWindow">a WPF window used to hook into Windows message handling</param>
+        /// <remarks>The specified notification object will be immediately notified about already connected Wirekite devices</remarks>
         public WirekiteService(IWirekiteDeviceNotification notification, Window wpfWindow)
         {
-            deviceNotification = notification;
+            _deviceNotification = notification;
             HwndSource _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(wpfWindow).Handle);
             if (_hwndSource == null)
                 throw new WirekiteException("Unable to create the HwndSource");
@@ -130,8 +161,8 @@ namespace Codecrete.Wirekite.Device
 
             WirekiteDevice device = new WirekiteDevice(this, devicePath, deviceHandle, interfaceHandle);
             _devices.Add(device);
-            if (deviceNotification != null)
-                deviceNotification.OnDeviceConnected(device);
+            if (_deviceNotification != null)
+                _deviceNotification.OnDeviceConnected(device);
         }
 
         #endregion
@@ -192,8 +223,8 @@ namespace Codecrete.Wirekite.Device
             {
                 if (String.Equals(device.DevicePath, devicePath, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (deviceNotification != null)
-                        deviceNotification.OnDeviceDisconnected(device);
+                    if (_deviceNotification != null)
+                        _deviceNotification.OnDeviceDisconnected(device);
                     device.Close();
                     return;
                 }
@@ -243,6 +274,10 @@ namespace Codecrete.Wirekite.Device
         #region IDisposable Support
         private bool isDisposed = false; // To detect redundant calls
 
+        /// <summary>
+        /// Disposes of the resources associated with this service
+        /// </summary>
+        /// <param name="disposing">Indicates if it is called from <see cref="Dispose()"/></param>
         protected virtual void Dispose(bool disposing)
         {
             if (!isDisposed)
@@ -267,11 +302,19 @@ namespace Codecrete.Wirekite.Device
             }
         }
 
+
+        /// <summary>
+        /// Finalizes this instance
+        /// </summary>
         ~WirekiteService() {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(false);
         }
 
+
+        /// <summary>
+        /// Disposes of all resources associated with this instance
+        /// </summary>
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
