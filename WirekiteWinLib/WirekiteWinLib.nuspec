@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Codecrete.Wirekite.WinLib</id>
+    <version>0.1.0</version>
+    <title>Wirekite</title>
+    <authors>manuelbl</authors>
+    <owners>Manuel Bleichenbacher</owners>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/manuelbl/WirekiteWin</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Wire up analog and digital inputs to your PC</description>
+    <releaseNotes>First release</releaseNotes>
+    <copyright>Copyright 2017 (c) Manuel Bleichenbacher.</copyright>
+    <tags>iot i2c mcu hardware analog</tags>
+  </metadata>
+  <files>
+    <file src="bin\Release\Wirekite.dll" target="lib\net452\Wirekite.dll" />
+    <file src="bin\Release\Wirekite.xml" target="lib\net452\Wirekite.xml" />
+  </files>
+</package>
