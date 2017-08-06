@@ -1,36 +1,20 @@
-﻿using Microsoft.Win32.SafeHandles;
+﻿/**
+ * Wirekite for Windows 
+ * Copyright (c) 2017 Manuel Bleichenbacher
+ * Licensed under MIT License
+ * https://opensource.org/licenses/MIT
+ */
+
+using Microsoft.Win32.SafeHandles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace Codecrete.Wirekite.Device
 {
     internal class NativeMethods
     {
-        internal const Int32 DIGCF_PRESENT = 0x02;
-        internal const Int32 DIGCF_DEVICEINTERFACE = 0x10;
-
-        internal struct SP_DEVICE_INTERFACE_DATA
-        {
-            internal UInt32 Size;
-            internal Guid InterfaceClassGuid;
-            internal UInt32 Flags;
-            internal IntPtr Reserved;
-        }
-
-        internal struct SP_DEVINFO_DATA
-        {
-            internal UInt32 Size;
-            internal Guid ClassGuid;
-            internal UInt32 DevInst;
-            internal IntPtr Reserved;
-        }
-
-
         internal static readonly IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
         internal const UInt32 FILE_ATTRIBUTE_NORMAL = 0x80;
@@ -55,6 +39,25 @@ namespace Codecrete.Wirekite.Device
         internal const int DBT_DEVICEARRIVAL = 0x8000;
         internal const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
 
+        internal const Int32 DIGCF_PRESENT = 0x02;
+        internal const Int32 DIGCF_DEVICEINTERFACE = 0x10;
+
+
+        internal struct SP_DEVICE_INTERFACE_DATA
+        {
+            internal UInt32 Size;
+            internal Guid InterfaceClassGuid;
+            internal UInt32 Flags;
+            internal IntPtr Reserved;
+        }
+
+        internal struct SP_DEVINFO_DATA
+        {
+            internal UInt32 Size;
+            internal Guid ClassGuid;
+            internal UInt32 DevInst;
+            internal IntPtr Reserved;
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         internal class DEV_BROADCAST_HDR
@@ -85,6 +88,7 @@ namespace Codecrete.Wirekite.Device
             internal Char[] dbccName;
         }
 
+
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern SafeFileHandle CreateFile(string fileName, UInt32 desiredAccess, UInt32 shareMode,
             IntPtr securityAttributes, UInt32 creationDisposition, UInt32 flagsAndAttributes, IntPtr templateFile);
@@ -94,7 +98,6 @@ namespace Codecrete.Wirekite.Device
 
         [DllImport("user32.dll")]
         internal static extern bool UnregisterDeviceNotification(IntPtr handle);
-
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern IntPtr SetupDiGetClassDevs(ref Guid classGuid, IntPtr enumerator, IntPtr hwndParent, UInt32 flags);
