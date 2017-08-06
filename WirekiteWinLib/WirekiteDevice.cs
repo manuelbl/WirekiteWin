@@ -8,7 +8,6 @@
 using Codecrete.Wirekite.Device.Messages;
 using Microsoft.Win32.SafeHandles;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -23,23 +22,40 @@ namespace Codecrete.Wirekite.Device
         private const Byte RxEndpointAddress = 0x81; // endpoint 1 / IN
         private const Byte TxEndpointAddress = 0x02; // endpoint 2 / OUT
 
+        private WirekiteService _service;
+        internal String DevicePath { get; private set; }
         private SafeFileHandle _deviceHandle;
         private IntPtr _interfaceHandle;
         private bool _isClosed = false;
-        private bool _disposed = false;
         private byte[] _rxBuffer;
 
         private PendingResponseList _pendingResponses = new PendingResponseList();
         private PortList _ports = new PortList();
 
 
-        internal WirekiteDevice(SafeFileHandle deviceHandle, IntPtr interfaceHandle)
+        internal WirekiteDevice(WirekiteService service, String devicePath, SafeFileHandle deviceHandle, IntPtr interfaceHandle)
         {
+            _service = service;
+            DevicePath = devicePath;
             _deviceHandle = deviceHandle;
             _interfaceHandle = interfaceHandle;
             ThreadPool.BindHandle(_deviceHandle);
 
             SubmitReadRequest();
+        }
+
+
+        public void Close()
+        {
+            if (_isClosed)
+                return;
+
+            _service.RemoveDevice(this);
+            WinUsb_Free(_interfaceHandle);
+            _interfaceHandle = IntPtr.Zero;
+            _deviceHandle.Dispose();
+            _deviceHandle = null;
+            _isClosed = true;
         }
 
 
@@ -79,6 +95,9 @@ namespace Codecrete.Wirekite.Device
 
             Overlapped.Unpack(nativeOverlapped);
             Overlapped.Free(nativeOverlapped);
+
+            if (errorCode == 2 || errorCode == 31)
+                return; // device was probably removed; broadcast will arrive later
 
             if (errorCode != 0)
                 throw new WirekiteException("Error on reading data from device", new Win32Exception((int)errorCode));
@@ -193,10 +212,14 @@ namespace Codecrete.Wirekite.Device
                 }
                 else
                 {
-                    if (Marshal.GetLastWin32Error() != ERROR_IO_PENDING)
+                    int errorCode = Marshal.GetLastWin32Error();
+                    if (errorCode != ERROR_IO_PENDING)
                     {
                         Overlapped.Unpack(nativeOverlapped);
                         Overlapped.Free(nativeOverlapped);
+                        if (errorCode == 22)
+                            return; // device was probably removed; broadcast will arrive later
+
                         WirekiteException.ThrowWin32Exception("Failed to submit write request to Wirekite device");
                     }
                 }
@@ -208,6 +231,9 @@ namespace Codecrete.Wirekite.Device
         {
             Overlapped.Unpack(nativeOverlapped);
             Overlapped.Free(nativeOverlapped);
+
+            if (errorCode == 2 || errorCode == 31)
+                return; // device was probably removed; broadcast will arrive later
 
             if (errorCode != 0)
                 throw new WirekiteException("Error on writing data to device", new Win32Exception((int)errorCode));
@@ -221,20 +247,10 @@ namespace Codecrete.Wirekite.Device
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed)
+            if (_isClosed)
                 return;
 
-            WinUsb_Free(_interfaceHandle);
-            _interfaceHandle = IntPtr.Zero;
-
-            if (disposing)
-            {
-                _deviceHandle.Dispose();
-            }
-
-            _deviceHandle = null;
-
-            _disposed = true;
+            Close();
         }
 
         public void Dispose()

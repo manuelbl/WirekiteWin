@@ -1,19 +1,11 @@
 ﻿using Codecrete.Wirekite.Device;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
 
 namespace Codecrete.Wirekite.Test.UI
 {
@@ -37,12 +29,13 @@ namespace Codecrete.Wirekite.Test.UI
         public MainWindow()
         {
             InitializeComponent();
+        }
 
-            WirekiteService service = new WirekiteService();
-            service.deviceNotification = this;
-            service.FindDevices();
 
-            _timer = new Timer(Blink, null, 300, 500);
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            WirekiteService service = new WirekiteService(this, this);
         }
 
 
@@ -52,7 +45,8 @@ namespace Codecrete.Wirekite.Test.UI
             _device.WriteDigitalPin(_builtinLED, _ledOn);
         }
 
-        public void OnDeviceAdded(WirekiteDevice device)
+
+        public void OnDeviceConnected(WirekiteDevice device)
         {
             _device = device;
             _device.ResetConfiguration();
@@ -67,6 +61,8 @@ namespace Codecrete.Wirekite.Test.UI
                 Dispatcher.Invoke(new Action(() => { SetSwitchDisplay(value); }));
             });
             SetSwitchDisplay(device.ReadDigitalPin(_switchPort));
+
+            _timer = new Timer(Blink, null, 300, 500);
         }
 
 
@@ -77,14 +73,24 @@ namespace Codecrete.Wirekite.Test.UI
         }
 
 
-        public void OnDeviceRemoved(WirekiteDevice device)
+        public void OnDeviceDisconnected(WirekiteDevice device)
         {
+            _timer.Dispose();
+            _timer = null;
+            _device = null;
 
+            redCheckBox.IsChecked = false;
+            orangeCheckBox.IsChecked = false;
+            greenCheckBox.IsChecked = false;
+            SetSwitchDisplay(false);
         }
 
 
         private void ledCheckBox_Changed(object sender, RoutedEventArgs e)
         {
+            if (_device == null)
+                return; // this event is even fired if the checkbox is changed programmatically
+
             ushort led;
             if (sender == redCheckBox)
                 led = _redLED;
