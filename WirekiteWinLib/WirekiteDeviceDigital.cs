@@ -141,7 +141,7 @@ namespace Codecrete.Wirekite.Device
             {
                 PortId = port,
                 Action = Message.PortActionSetValue,
-                Data = new byte[4],
+                Data = new byte[4]
             };
             request.Data[0] = value ? (byte)1 : (byte)0;
 

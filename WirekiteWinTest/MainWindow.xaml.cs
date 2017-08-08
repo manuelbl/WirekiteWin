@@ -43,6 +43,8 @@ namespace Codecrete.Wirekite.Test.UI
         private Brush _stickPressedColor = Brushes.Orange;
         private Brush _stickReleasedColor = Brushes.LightGray;
 
+        private ushort _pwmOutputPin;
+
 
         public MainWindow()
         {
@@ -84,20 +86,22 @@ namespace Codecrete.Wirekite.Test.UI
             SetSwitchDisplay(device.ReadDigitalPin(_switchPort));
 
             _dutyCyclePin = device.ConfigureAnalogInputPin(AnalogPin.A4, 127, (port, value) => {
-                string text = String.Format("{0:##0.0} %", value * 100 / 32767.0);
+                device.WritePWMPin(_pwmOutputPin, value);
                 Dispatcher.Invoke(new Action(() =>
                 {
+                    string text = String.Format("{0:##0.0} %", value * 100 / 32767.0);
                     dutyCycleValueLabel.Content = text;
                 }));
             });
-
+            
             _frequencyPin = device.ConfigureAnalogInputPin(AnalogPin.A1, 149, (port, value) => {
                 if (Math.Abs(value - _prevFrequencyValue) > 100) {
                     _prevFrequencyValue = value;
                     int frequency = (int)((Math.Exp(Math.Exp(value / 32767.0)) - Math.Exp(1)) * 900 + 10);
-                    string text = String.Format("{0} Hz", frequency);
+                    _device.ConfigurePWMTimer(0, frequency, PWMTimerAttributes.Default);
                     Dispatcher.Invoke(new Action(() =>
                     {
+                        string text = String.Format("{0} Hz", frequency);
                         frequencyValueLabel.Content = text;
                     }));
                 }
@@ -116,7 +120,6 @@ namespace Codecrete.Wirekite.Test.UI
                 }));
             });
 
-
             _stickSwitchPin = device.ConfigureDigitalInputPin(20,
                 DigitalInputPinAttributes.TriggerRaising | DigitalInputPinAttributes.TriggerFalling | DigitalInputPinAttributes.Pullup,
                 (port, value) => {
@@ -126,6 +129,8 @@ namespace Codecrete.Wirekite.Test.UI
                     }));
             });
             analogStick.Foreground = device.ReadDigitalPin(_stickSwitchPin) ? _stickReleasedColor : _stickPressedColor;
+
+            _pwmOutputPin = device.ConfigurePWMOutputPin(PWMPin.Pin10);
 
             _timer = new Timer(Blink, null, 300, 500);
         }

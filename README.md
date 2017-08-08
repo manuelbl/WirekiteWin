@@ -4,7 +4,7 @@ Wire up digital and analog IOs to your PC and control them with your C# / VB.NET
 
 To connect the inputs and outputs, use a [Teensy development board](https://www.pjrc.com/teensy/) connected via USB. It looks a lot like an Arduino Nano connected for programming. Yet with Wirekite the custom code is written for and run on your computer – not for the microcontroller.
 
-This repository contains the Windows code. There are separate repositories for the [Teensy code](https://github.com/manuelbl/Wirekite) and the [MacOS code(https://github.com/manuelbl/WirekiteMac).
+This repository contains the Windows code. There are separate repositories for the [Teensy code](https://github.com/manuelbl/Wirekite) and the [MacOS code](https://github.com/manuelbl/WirekiteMac).
 
 ## Supported boards
 
