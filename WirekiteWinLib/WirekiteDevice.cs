@@ -163,6 +163,7 @@ namespace Codecrete.Wirekite.Device
 
         private void HandleConfigResponse(ConfigResponse response)
         {
+
             _pendingResponses.PutResponse(response.RequestId, response);
         }
 
@@ -206,7 +207,7 @@ namespace Codecrete.Wirekite.Device
             ConfigRequest request = new ConfigRequest
             {
                 Action = Message.ConfigActionReset,
-                PortOrRequestId = 0xffff
+                RequestId = 0xffff
             };
 
             SendConfigRequest(request);
@@ -217,10 +218,10 @@ namespace Codecrete.Wirekite.Device
 
         private ConfigResponse SendConfigRequest(ConfigRequest request)
         {
-            if (request.PortOrRequestId == 0)
-                request.PortOrRequestId = _ports.NextRequestId();
+            if (request.RequestId == 0)
+                request.RequestId = _ports.NextRequestId();
             WriteMessage(request);
-            ConfigResponse response = _pendingResponses.WaitForResponse(request.PortOrRequestId) as ConfigResponse;
+            ConfigResponse response = _pendingResponses.WaitForResponse(request.RequestId) as ConfigResponse;
             if (response.Result != 0)
                 throw new WirekiteException(String.Format("Configuration failed with code {0}", response.Result));
             return response;

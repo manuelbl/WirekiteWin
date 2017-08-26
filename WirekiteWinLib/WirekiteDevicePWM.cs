@@ -97,7 +97,7 @@ namespace Codecrete.Wirekite.Device
             ConfigRequest request = new ConfigRequest
             {
                 Action = Message.ConfigActionRelease,
-                PortOrRequestId = port
+                PortId = port
             };
 
             SendConfigRequest(request);
@@ -127,7 +127,7 @@ namespace Codecrete.Wirekite.Device
                 Action = Message.ConfigActionConfigModule,
                 PortType = Message.ConfigModulePWMTimer,
                 PinConfig = (UInt16)timer,
-                PortAttributes = (UInt16)attributes,
+                PortAttributes1 = (UInt16)attributes,
                 Value1 = (UInt32)frequency
             };
 
@@ -155,7 +155,7 @@ namespace Codecrete.Wirekite.Device
                 Action = Message.ConfigActionConfigModule,
                 PortType = Message.ConfigModulePWMChannel,
                 PinConfig = (UInt16)timer,
-                PortAttributes = (UInt16)attributes,
+                PortAttributes1 = (UInt16)attributes,
                 Value1 = (UInt16)channel
             };
 
@@ -174,11 +174,8 @@ namespace Codecrete.Wirekite.Device
             {
                 PortId = port,
                 Action = Message.PortActionSetValue,
-                Data = new byte[4]
+                Value1 = (UInt32)dutyCycle
             };
-
-            request.Data[0] = (byte)dutyCycle;
-            request.Data[1] = (byte)(dutyCycle >> 8);
 
             SendPortRequest(request);
         }

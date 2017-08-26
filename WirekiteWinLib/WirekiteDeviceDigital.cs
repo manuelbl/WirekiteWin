@@ -118,7 +118,7 @@ namespace Codecrete.Wirekite.Device
             ConfigRequest request = new ConfigRequest
             {
                 Action = Message.ConfigActionRelease,
-                PortOrRequestId = port
+                PortId = port
             };
 
             SendConfigRequest(request);
@@ -141,9 +141,8 @@ namespace Codecrete.Wirekite.Device
             {
                 PortId = port,
                 Action = Message.PortActionSetValue,
-                Data = new byte[4]
+                Value1 = value ? (uint)1 : (uint)0
             };
-            request.Data[0] = value ? (byte)1 : (byte)0;
 
             SendPortRequest(request);
         }
@@ -228,7 +227,7 @@ namespace Codecrete.Wirekite.Device
             SendPortRequest(request);
 
             PortEvent evt = p.WaitForEvent();
-            return evt.Data[0] != 0;
+            return evt.Value1 != 0;
         }
 
 
@@ -239,7 +238,7 @@ namespace Codecrete.Wirekite.Device
                 Action = Message.ConfigActionConfigPort,
                 PortType = Message.PortTypeDigitalPin,
                 PinConfig = (UInt16)pin,
-                PortAttributes = attributes
+                PortAttributes1 = attributes
             };
 
             ConfigResponse response = SendConfigRequest(request);
@@ -265,8 +264,8 @@ namespace Codecrete.Wirekite.Device
                 }
                 else if (type == PortType.DigitalInputPrecached || type == PortType.DigitalInputTriggering)
                 {
-                    bool value = evt.Data[0] != 0;
-                    port.LastSample = evt.Data[0];
+                    bool value = evt.Value1 != 0;
+                    port.LastSample = (UInt16)evt.Value1;
 
                     if (type == PortType.DigitalInputTriggering)
                     {

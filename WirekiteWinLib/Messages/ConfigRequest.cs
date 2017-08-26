@@ -14,20 +14,22 @@ namespace Codecrete.Wirekite.Device.Messages
     {
         internal byte Action;
         internal byte PortType;
-        internal UInt16 PortOrRequestId;
-        internal UInt16 PortAttributes;
+        internal UInt16 PortId;
+        internal UInt16 RequestId;
         internal UInt16 PinConfig;
         internal UInt32 Value1;
+        internal UInt16 PortAttributes1;
+        internal UInt16 PortAttributes2;
 
         internal ConfigRequest()
         {
-            MessageSize = 16;
+            MessageSize = 20;
             MessageType = MessageTypeConfigRequest;
         }
 
         internal override int GetMinimumLength()
         {
-            return 16;
+            return 20;
         }
 
         internal override void Read(byte[] buf, int offset)
@@ -40,10 +42,12 @@ namespace Codecrete.Wirekite.Device.Messages
             WriteHeader(buf, offset);
             buf[4] = Action;
             buf[5] = PortType;
-            WriteUInt16(buf, 6, PortOrRequestId);
-            WriteUInt16(buf, 8, PortAttributes);
+            WriteUInt16(buf, 6, PortId);
+            WriteUInt16(buf, 8, RequestId);
             WriteUInt16(buf, 10, PinConfig);
             WriteUInt32(buf, 12, Value1);
+            WriteUInt16(buf, 16, PortAttributes1);
+            WriteUInt16(buf, 18, PortAttributes2);
         }
     }
 }

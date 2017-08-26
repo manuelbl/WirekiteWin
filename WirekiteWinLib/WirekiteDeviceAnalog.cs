@@ -133,7 +133,7 @@ namespace Codecrete.Wirekite.Device
             ConfigRequest request = new ConfigRequest
             {
                 Action = Message.ConfigActionRelease,
-                PortOrRequestId = port
+                PortId = port
             };
 
             SendConfigRequest(request);
@@ -164,7 +164,7 @@ namespace Codecrete.Wirekite.Device
             SendPortRequest(request);
 
             PortEvent evt = p.WaitForEvent();
-            return evt.Data[0] | (evt.Data[1] << 8);
+            return (int)(Int16)evt.Value1;
         }
 
 
@@ -182,7 +182,7 @@ namespace Codecrete.Wirekite.Device
                 }
                 else
                 {
-                    int value = evt.Data[0] | (evt.Data[1] << 8);
+                    int value = (int)(UInt16)evt.Value1;
                     port.LastSample = (UInt16)value;
 
                     if (_analogInputCallbacks.TryGetValue(port.Id, out AnalogInputCallback callback))
