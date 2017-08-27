@@ -44,6 +44,10 @@ namespace Codecrete.Wirekite.Device
         private DeviceState _deviceState = DeviceState.Initializing;
         private byte[] _rxBuffer;
 
+        private int partialSize;
+        private int partialMessageSize;
+        private byte[] partialMessage;
+
         private PendingResponseList _pendingResponses = new PendingResponseList();
         private PortList _ports = new PortList();
 
@@ -133,24 +137,93 @@ namespace Codecrete.Wirekite.Device
             if (_deviceState != DeviceState.Closed)
                 SubmitReadRequest();
 
-            HandleInput(buffer, (int)numBytes);
+            HandleChunk(buffer, (int)numBytes);
         }
 
 
-        private void HandleInput(byte[] buffer, int numBytes)
+        private void HandleChunk(byte[] data, int length)
         {
-            byte messageType = buffer[2];
+            int offset = 0;
+
+            if (partialSize > 0)
+            {
+                // there is a partial message from the last USB packet
+                if (partialSize == 1)
+                {
+                    // super special case: only half of the first word
+                    // was transmitted
+                    partialMessageSize += data[0] << 8;
+                    partialMessage = new byte[partialMessageSize];
+                    partialMessage[0] = (byte)partialMessageSize;
+                }
+
+                int remLength = length;
+                if (partialSize + remLength > partialMessageSize)
+                    remLength = partialMessageSize - partialSize;
+
+                // append to partial message (buffer is big enough)
+                Array.Copy(data, 0, partialMessage, partialSize, remLength);
+                offset = remLength;
+                length -= remLength;
+                partialSize += remLength;
+
+                // if message is complete handle it
+                if (partialSize == partialMessageSize)
+                {
+                    HandleInput(partialMessage, 0);
+                    partialSize = 0;
+                    partialMessageSize = 0;
+                    partialMessage = null;
+                }
+            }
+    
+            // Handle entire messages
+            while (length >= 2) {
+                int msgSize = data[offset] | (data[offset + 1] << 8);
+                if (length < msgSize)
+                    break; // partial message
+        
+                HandleInput(data, offset);
+
+                offset += msgSize;
+                length -= msgSize;
+            }
+    
+            // Handle remainder
+            if (length > 0) {
+                // a partial message remains
+        
+                if (length == 1) {
+                    // super special case: only 1 byte was transmitted;
+                    // we don't know the size of the message
+                    partialSize = 1;
+                    partialMessageSize = data[offset];
+            
+                } else {
+                    // allocate buffer
+                    partialMessageSize = data[offset] | (data[offset + 1] << 8);
+                    partialMessage = new byte[partialMessageSize];
+                    partialSize = length;
+                    Array.Copy(data, offset, partialMessage, 0, partialSize);
+                }
+            }
+        }
+
+
+        private void HandleInput(byte[] data, int offset)
+        {
+            byte messageType = data[offset + 2];
             if (messageType == Message.MessageTypeConfigResponse)
             {
                 ConfigResponse response = new ConfigResponse();
-                response.Read(buffer, 0);
+                response.Read(data, offset);
                 if (_deviceState == DeviceState.Ready || response.RequestId == 0xffff)
                     HandleConfigResponse(response);
             }
             else if (messageType == Message.MessageTypePortEvent)
             {
                 PortEvent evt = new PortEvent();
-                evt.Read(buffer, 0);
+                evt.Read(data, offset);
                 if (_deviceState == DeviceState.Ready)
                     HandlePortEvent(evt);
             }

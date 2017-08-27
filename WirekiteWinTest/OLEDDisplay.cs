@@ -1,4 +1,11 @@
-﻿using Codecrete.Wirekite.Device;
+﻿/*
+ * Wirekite for Windows 
+ * Copyright (c) 2017 Manuel Bleichenbacher
+ * Licensed under MIT License
+ * https://opensource.org/licenses/MIT
+ */
+
+using Codecrete.Wirekite.Device;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -197,17 +204,14 @@ namespace Codecrete.Wirekite.Test.UI
 
             /*
             // Just for the fun of it: read back some of the data
-            let cmd: [UInt8] = [
-                0x80, OLEDDisplay.SetPageAddress + UInt8(4),
-                0x80, OLEDDisplay.SetColumnAddressLow | UInt8(DisplayOffset & 0x0f),
-                0x80, OLEDDisplay.SetColumnAddressHigh | UInt8((DisplayOffset >> 4) & 0x0f),
+            byte[] cmd = new byte[] {
+                0x80, SetPageAddress + 4,
+                0x80, (byte)(SetColumnAddressLow | (DisplayOffset & 0x0f)),
+                0x80, (byte)(SetColumnAddressHigh | ((DisplayOffset >> 4) & 0x0f)),
                 0x40
-            ]
-            let data1 = Data(bytes: cmd)
-            let response = device!.sendAndRequest(onI2CPort: i2cPort, data: data1, toSlave: displayAddress, receiveLength: UInt16(Width))!
-            let responseBytes = [UInt8](response)
+            };
+            byte[] pageData = device.SendAndRequestOnI2CPort(i2cPort, cmd, DisplayAddress, (UInt16)Width);
             */
-
         }
 
 
