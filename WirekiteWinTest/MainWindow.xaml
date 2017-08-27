@@ -21,5 +21,7 @@
         <Label x:Name="gyroXValueLabel" Content="X: -" HorizontalAlignment="Left" Margin="115,169,0,0" VerticalAlignment="Top" FontSize="16" Width="100"/>
         <Label x:Name="gyroYValueLabel" Content="Y: -" HorizontalAlignment="Left" Margin="115,200,0,0" VerticalAlignment="Top" FontSize="16" Width="100"/>
         <Label x:Name="gyroZValueLabel" Content="Z: -" HorizontalAlignment="Left" Margin="115,228,0,0" VerticalAlignment="Top" FontSize="16" Width="100"/>
+        <Label x:Name="ammeterLabel" Content="Current" HorizontalAlignment="Left" Margin="10,143,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="ammeterValueLabel" Content="- mA" HorizontalAlignment="Left" Margin="10,169,0,0" VerticalAlignment="Top" FontSize="16" Width="100"/>
     </Grid>
 </Window>

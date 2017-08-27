@@ -49,8 +49,13 @@ namespace Codecrete.Wirekite.Test.UI
 
         private ushort _pwmOutputPin;
 
+        private ushort _i2cPort;
+
         private Timer _gyroTimer;
         private GyroMPU6050 _gyro;
+
+        private Timer _ammeterTimer;
+        private Ammeter _ammeter;
 
 
         public MainWindow()
@@ -91,6 +96,20 @@ namespace Codecrete.Wirekite.Test.UI
                     gyroYValueLabel.Content = String.Format("Y: {0}", _gyro.GyroY);
                     gyroZValueLabel.Content = String.Format("Z: {0}", _gyro.GyroZ);
                 }
+            });
+        }
+
+
+        public void ReadAmmeter(object stateInfo)
+        {
+            double current = _ammeter.ReadAmps();
+
+            Dispatcher.Invoke(() =>
+            {
+                string text = "- mA";
+                if (!double.IsNaN(current))
+                    text = string.Format("{0} mA", current);
+                ammeterValueLabel.Content = text;
             });
         }
 
@@ -178,9 +197,13 @@ namespace Codecrete.Wirekite.Test.UI
 
             if (useI2CBoard)
             {
-                _gyro = new GyroMPU6050(_device, I2CPins.I2CPinsSCL16_SDA17);
+                _i2cPort = _device.ConfigureI2CMaster(I2CPins.I2CPinsSCL16_SDA17, 400000);
+                _gyro = new GyroMPU6050(_device, _i2cPort);
                 _gyro.StartCalibration();
                 _gyroTimer = new Timer(ReadGyro, null, 400, 400);
+
+                _ammeter = new Ammeter(_device, _i2cPort);
+                _ammeterTimer = new Timer(ReadAmmeter, null, 300, 350);
             }
         }
 
@@ -203,6 +226,11 @@ namespace Codecrete.Wirekite.Test.UI
             {
                 _gyroTimer.Dispose();
                 _gyroTimer = null;
+            }
+            if (_ammeterTimer != null)
+            {
+                _ammeterTimer.Dispose();
+                _ammeterTimer = null;
             }
         }
 
