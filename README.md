@@ -17,7 +17,7 @@ This repository contains the Windows code. There are separate repositories for t
 - Digital input
 - Analog input
 - PWM output
-- I2C (soon)
+- I2C
 
 
 # Getting started
