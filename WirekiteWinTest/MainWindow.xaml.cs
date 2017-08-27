@@ -57,6 +57,9 @@ namespace Codecrete.Wirekite.Test.UI
         private Timer _ammeterTimer;
         private Ammeter _ammeter;
 
+        private OLEDDisplay _display;
+        private Timer _displayTimer;
+
 
         public MainWindow()
         {
@@ -111,6 +114,12 @@ namespace Codecrete.Wirekite.Test.UI
                     text = string.Format("{0} mA", current);
                 ammeterValueLabel.Content = text;
             });
+        }
+
+
+        public void UpdateDisplay(object stateInfo)
+        {
+            _display.Update();
         }
 
 
@@ -204,6 +213,10 @@ namespace Codecrete.Wirekite.Test.UI
 
                 _ammeter = new Ammeter(_device, _i2cPort);
                 _ammeterTimer = new Timer(ReadAmmeter, null, 300, 350);
+
+                _display = new OLEDDisplay(_device, _i2cPort);
+                _display.DisplayOffset = 2;
+                _displayTimer = new Timer(UpdateDisplay, null, 500, 40);
             }
         }
 
@@ -231,6 +244,11 @@ namespace Codecrete.Wirekite.Test.UI
             {
                 _ammeterTimer.Dispose();
                 _ammeterTimer = null;
+            }
+            if (_displayTimer != null)
+            {
+                _displayTimer.Dispose();
+                _displayTimer = null;
             }
         }
 
