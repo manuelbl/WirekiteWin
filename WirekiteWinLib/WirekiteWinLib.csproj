@@ -61,6 +61,7 @@
     <Compile Include="WirekiteDevice.cs" />
     <Compile Include="WirekiteDeviceAnalog.cs" />
     <Compile Include="WirekiteDeviceDigital.cs" />
+    <Compile Include="WirekiteDeviceI2C.cs" />
     <Compile Include="WirekiteDevicePWM.cs" />
     <Compile Include="WirekiteException.cs" />
     <Compile Include="WirekiteService.cs" />

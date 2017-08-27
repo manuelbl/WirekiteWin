@@ -17,5 +17,9 @@
         <Label x:Name="dutyCycleLabel" Content="DutyCycle" HorizontalAlignment="Left" Margin="115,43,0,0" VerticalAlignment="Top"/>
         <Label x:Name="dutyCycleValueLabel" Content="- %" HorizontalAlignment="Left" Margin="115,69,0,0" VerticalAlignment="Top" FontSize="16" Width="100"/>
         <wk:AnalogStick x:Name="analogStick" Margin="343,146,64,63.8" XDirection="0" YDirection="0"/>
+        <Label x:Name="gyroLabel" Content="Gyro" HorizontalAlignment="Left" Margin="115,143,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="gyroXValueLabel" Content="X: -" HorizontalAlignment="Left" Margin="115,169,0,0" VerticalAlignment="Top" FontSize="16" Width="100"/>
+        <Label x:Name="gyroYValueLabel" Content="Y: -" HorizontalAlignment="Left" Margin="115,200,0,0" VerticalAlignment="Top" FontSize="16" Width="100"/>
+        <Label x:Name="gyroZValueLabel" Content="Z: -" HorizontalAlignment="Left" Margin="115,228,0,0" VerticalAlignment="Top" FontSize="16" Width="100"/>
     </Grid>
 </Window>

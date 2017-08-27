@@ -17,7 +17,17 @@ namespace Codecrete.Wirekite.Device.Messages
         internal UInt16 ActionAttribute2;
         internal UInt16 RequestId;
         internal UInt32 Value1;
-        internal byte[] Data;
+
+        private byte[] _data;
+        internal byte[] Data
+        {
+            get { return _data; }
+            set
+            {
+                _data = value;
+                MessageSize = (UInt16)(16 + (value != null ? value.Length : 0));
+            }
+        }
 
         internal PortRequest()
         {
@@ -46,7 +56,7 @@ namespace Codecrete.Wirekite.Device.Messages
             WriteUInt16(buf, offset + 10, RequestId);
             WriteUInt32(buf, offset + 12, Value1);
             if (Data != null)
-                Array.Copy(Data, 0, buf, offset + 12, Data.Length);
+                Array.Copy(Data, 0, buf, offset + 16, Data.Length);
         }
     }
 }

@@ -24,10 +24,14 @@ namespace Codecrete.Wirekite.Device.Messages
 
         internal const byte PortActionSetValue = 1;
         internal const byte PortActionGetValue = 2;
+        internal const byte PortActionTxData = 3;
+        internal const byte PortActionRxData = 4;
+        internal const byte PortActionTxNRxData = 5;
 
         internal const byte PortTypeDigitalPin = 1;
         internal const byte PortTypeAnalogIn = 2;
         internal const byte PortTypePWM = 3;
+        internal const byte PortTypeI2C = 4;
 
         internal const byte ConfigModulePWMTimer = 1;
         internal const byte ConfigModulePWMChannel = 2;

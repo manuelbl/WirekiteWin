@@ -19,7 +19,8 @@ namespace Codecrete.Wirekite.Device
         DigitalInputTriggering,
         AnalogInputOnDemand,
         AnalogInputSampling,
-        PWMOutput
+        PWMOutput,
+        I2CPort
     }
 
 

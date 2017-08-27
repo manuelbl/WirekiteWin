@@ -163,7 +163,6 @@ namespace Codecrete.Wirekite.Device
 
         private void HandleConfigResponse(ConfigResponse response)
         {
-
             _pendingResponses.PutResponse(response.RequestId, response);
         }
 
@@ -187,6 +186,10 @@ namespace Codecrete.Wirekite.Device
                 case PortType.AnalogInputOnDemand:
                 case PortType.AnalogInputSampling:
                     HandleAnalogPinEvent(evt);
+                    break;
+
+                case PortType.I2CPort:
+                    HandleI2CEvent(evt);
                     break;
 
                 default:
