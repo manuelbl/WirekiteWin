@@ -87,13 +87,13 @@ namespace Codecrete.Wirekite.Device
     /// </summary>
     /// <param name="port">the port ID associated with the digital input</param>
     /// <param name="value">the new input value</param>
-    public delegate void DigitalInputCallback(UInt16 port, bool value);
+    public delegate void DigitalInputCallback(int port, bool value);
 
 
 
     public partial class WirekiteDevice
     {
-        private ConcurrentDictionary<UInt16, DigitalInputCallback> _digitalInputCallbacks = new ConcurrentDictionary<ushort, DigitalInputCallback>();
+        private ConcurrentDictionary<int, DigitalInputCallback> _digitalInputCallbacks = new ConcurrentDictionary<int, DigitalInputCallback>();
 
 
         /// <summary>
@@ -101,10 +101,11 @@ namespace Codecrete.Wirekite.Device
         /// </summary>
         /// <param name="pin">the pin number (as labelled on the Teensy)</param>
         /// <param name="attributes">additional features to be configured for the output pin</param>
+        /// <param param name="initialValue">initial value of pin (true for high, false for low)</param>
         /// <returns>the port ID for further operations on the configured digital output</returns>
-        public UInt16 ConfigureDigitalOutputPin(int pin, DigitalOutputPinAttributes attributes)
+        public int ConfigureDigitalOutputPin(int pin, DigitalOutputPinAttributes attributes, bool initialValue = false)
         {
-            Port port = ConfigureDigitalPin(pin, PortType.DigitalOutput, (UInt16)(1 + (UInt16)attributes));
+            Port port = ConfigureDigitalPin(pin, PortType.DigitalOutput, (UInt16)(1 + (UInt16)attributes), initialValue);
             return port.Id;
         }
 
@@ -113,12 +114,12 @@ namespace Codecrete.Wirekite.Device
         /// Releases a digital input or output and frees the pin for other usage
         /// </summary>
         /// <param name="port">the port ID of the digital input or output</param>
-        public void ReleaseDigitalPin(UInt16 port)
+        public void ReleaseDigitalPin(int port)
         {
             ConfigRequest request = new ConfigRequest
             {
                 Action = Message.ConfigActionRelease,
-                PortId = port
+                PortId = (UInt16)port
             };
 
             SendConfigRequest(request);
@@ -134,12 +135,12 @@ namespace Codecrete.Wirekite.Device
         /// Write a value to the digital output
         /// </summary>
         /// <param name="port">the digital output's port ID</param>
-        /// <param name="value">the output value</param>
-        public void WriteDigitalPin(UInt16 port, bool value)
+        /// <param name="value">the output value (true for high, false for low)</param>
+        public void WriteDigitalPin(int port, bool value)
         {
             PortRequest request = new PortRequest
             {
-                PortId = port,
+                PortId = (UInt16)port,
                 Action = Message.PortActionSetValue,
                 Value1 = value ? (uint)1 : (uint)0
             };
@@ -158,7 +159,7 @@ namespace Codecrete.Wirekite.Device
         /// <param name="attributes">additional features to be configured</param>
         /// <param name="communication">the type of communication with the Wirekite device</param>
         /// <returns>the port ID of the configured digital input</returns>
-        public UInt16 ConfigureDigitalInputPin(int pin, DigitalInputPinAttributes attributes, InputCommunication communication)
+        public int ConfigureDigitalInputPin(int pin, DigitalInputPinAttributes attributes, InputCommunication communication)
         {
             if (communication != InputCommunication.OnDemand && communication != InputCommunication.Precached)
                 throw new WirekiteException("Digital input pin witout notification must use communication \"OnDemand\" or \"Precached\"");
@@ -194,7 +195,7 @@ namespace Codecrete.Wirekite.Device
         /// the raising edge, the falling edge or both edges of the signal. The notification delegate is
         /// called on a background thread.
         /// </remarks>
-        public UInt16 ConfigureDigitalInputPin(int pin, DigitalInputPinAttributes attributes, DigitalInputCallback callback)
+        public int ConfigureDigitalInputPin(int pin, DigitalInputPinAttributes attributes, DigitalInputCallback callback)
         {
             if ((attributes & (DigitalInputPinAttributes.TriggerRaising | DigitalInputPinAttributes.TriggerFalling)) == 0)
                 throw new WirekiteException("Digital input pin with callback requires attribute \"DigiInPinTriggerRaising\" and/or \"DigiInPinTriggerFalling\"");
@@ -210,7 +211,7 @@ namespace Codecrete.Wirekite.Device
         /// </summary>
         /// <param name="port">the digital input's port ID</param>
         /// <returns>the input value</returns>
-        public bool ReadDigitalPin(UInt16 port)
+        public bool ReadDigitalPin(int port)
         {
             Port p = _ports.GetPort(port);
             if (p == null)
@@ -221,7 +222,7 @@ namespace Codecrete.Wirekite.Device
                 return p.LastSample != 0;
 
             PortRequest request = new PortRequest {
-                PortId = port,
+                PortId = (UInt16)port,
                 Action = Message.PortActionGetValue
             };
             SendPortRequest(request);
@@ -231,14 +232,15 @@ namespace Codecrete.Wirekite.Device
         }
 
 
-        private Port ConfigureDigitalPin(int pin, PortType portType, UInt16 attributes)
+        private Port ConfigureDigitalPin(int pin, PortType portType, UInt16 attributes, bool initialValue = false)
         {
             ConfigRequest request = new ConfigRequest
             {
                 Action = Message.ConfigActionConfigPort,
                 PortType = Message.PortTypeDigitalPin,
                 PinConfig = (UInt16)pin,
-                PortAttributes1 = attributes
+                PortAttributes1 = attributes,
+                Value1 = (UInt32)(initialValue ? 1 : 0)
             };
 
             ConfigResponse response = SendConfigRequest(request);
@@ -265,7 +267,7 @@ namespace Codecrete.Wirekite.Device
                 else if (type == PortType.DigitalInputPrecached || type == PortType.DigitalInputTriggering)
                 {
                     bool value = evt.Value1 != 0;
-                    port.LastSample = (UInt16)evt.Value1;
+                    port.LastSample = evt.Value1;
 
                     if (type == PortType.DigitalInputTriggering)
                     {

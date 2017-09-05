@@ -20,36 +20,36 @@ namespace Codecrete.Wirekite.Test.UI
     /// </summary>
     public partial class MainWindow : Window, IWirekiteDeviceNotification, IDisposable
     {
-        private const bool useLEDBoard = false;
-        private const bool useI2CBoard= true;
+        private const bool useLEDBoard = true;
+        private const bool useI2CBoard= false;
         private const bool hasBuiltInLED = true;
         
         private WirekiteDevice _device;
         private WirekiteService _service;
 
         private Timer _ledTimer;
-        private ushort _builtinLED;
+        private int _builtinLED;
         private bool _ledOn = false;
 
-        private ushort _redLED;
-        private ushort _orangeLED;
-        private ushort _greenLED;
+        private int _redLED;
+        private int _orangeLED;
+        private int _greenLED;
 
-        private ushort _dutyCyclePin;
-        private ushort _frequencyPin;
-        private int _prevFrequencyValue;
+        private int _dutyCyclePin;
+        private int _frequencyPin;
+        private double _prevFrequencyValue;
 
-        private ushort _switchPort;
+        private int _switchPort;
 
-        private ushort _voltageXPin;
-        private ushort _voltageYPin;
-        private ushort _stickSwitchPin;
+        private int _voltageXPin;
+        private int _voltageYPin;
+        private int _stickSwitchPin;
         private Brush _stickPressedColor = Brushes.Orange;
         private Brush _stickReleasedColor = Brushes.LightGray;
 
-        private ushort _pwmOutputPin;
+        private int _pwmOutputPin;
 
-        private ushort _i2cPort;
+        private int _i2cPort;
 
         private Timer _gyroTimer;
         private GyroMPU6050 _gyro;
@@ -155,17 +155,17 @@ namespace Codecrete.Wirekite.Test.UI
                     device.WritePWMPin(_pwmOutputPin, value);
                     Dispatcher.Invoke(new Action(() =>
                     {
-                        string text = String.Format("{0:##0.0} %", value * 100 / 32767.0);
+                        string text = String.Format("{0:##0.0} %", value * 100);
                         dutyCycleValueLabel.Content = text;
                     }));
                 });
 
                 _frequencyPin = device.ConfigureAnalogInputPin(AnalogPin.A1, 149, (port, value) =>
                 {
-                    if (Math.Abs(value - _prevFrequencyValue) > 100)
+                    if (Math.Abs(value - _prevFrequencyValue) > 0.01)
                     {
                         _prevFrequencyValue = value;
-                        int frequency = (int)((Math.Exp(Math.Exp(value / 32767.0)) - Math.Exp(1)) * 900 + 10);
+                        int frequency = (int)((Math.Exp(Math.Exp(value)) - Math.Exp(1)) * 900 + 10);
                         _device.ConfigurePWMTimer(0, frequency, PWMTimerAttributes.Default);
                         Dispatcher.Invoke(new Action(() =>
                         {
@@ -179,14 +179,14 @@ namespace Codecrete.Wirekite.Test.UI
                 {
                     Dispatcher.Invoke(new Action(() =>
                     {
-                        analogStick.XDirection = 1.0 - value / 16383.0;
+                        analogStick.XDirection = 1.0 - value * 2;
                     }));
                 });
                 _voltageYPin = device.ConfigureAnalogInputPin(AnalogPin.A9, 139, (port, value) =>
                 {
                     Dispatcher.Invoke(new Action(() =>
                     {
-                        analogStick.YDirection = 1.0 - value / 16383.0;
+                        analogStick.YDirection = 1.0 - value * 2;
                     }));
                 });
 
@@ -201,7 +201,7 @@ namespace Codecrete.Wirekite.Test.UI
                     });
                 analogStick.Foreground = device.ReadDigitalPin(_stickSwitchPin) ? _stickReleasedColor : _stickPressedColor;
 
-                _pwmOutputPin = device.ConfigurePWMOutputPin(PWMPin.Pin10);
+                _pwmOutputPin = device.ConfigurePWMOutputPin(10);
             }
 
             if (useI2CBoard)
@@ -271,7 +271,7 @@ namespace Codecrete.Wirekite.Test.UI
             if (_device == null)
                 return; // this event is even fired if the checkbox is changed programmatically
 
-            ushort led;
+            int led;
             if (sender == redCheckBox)
                 led = _redLED;
             else if (sender == orangeCheckBox)

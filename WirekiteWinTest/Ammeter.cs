@@ -16,10 +16,10 @@ namespace Codecrete.Wirekite.Test.UI
         public const int InvalidValue = 0x7fffffff;
 
         private WirekiteDevice device;
-        private UInt16 i2cPort;
+        private int i2cPort;
         private bool releasePort;
 
-        public UInt16 AmmeterAddress = 0x40;
+        public int AmmeterAddress = 0x40;
 
 
         public Ammeter(WirekiteDevice device, I2CPins i2cPins)
@@ -31,7 +31,7 @@ namespace Codecrete.Wirekite.Test.UI
         }
 
 
-        public Ammeter(WirekiteDevice device, UInt16 i2cPort)
+        public Ammeter(WirekiteDevice device, int i2cPort)
         {
             this.device = device;
             this.i2cPort = i2cPort;
@@ -74,7 +74,7 @@ namespace Codecrete.Wirekite.Test.UI
         private int ReadRegister(int register, int length)
         {
             byte[] txData = new byte[] { (byte)register };
-            byte[] rxData = device.SendAndRequestOnI2CPort(i2cPort, txData, AmmeterAddress, (UInt16)length);
+            byte[] rxData = device.SendAndRequestOnI2CPort(i2cPort, txData, AmmeterAddress, length);
             if (rxData != null && rxData.Length == length)
             {
                 return (Int16)((rxData[0] << 8) | rxData[1]);

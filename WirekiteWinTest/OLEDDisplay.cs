@@ -42,7 +42,7 @@ namespace Codecrete.Wirekite.Test.UI
         private const byte DeactivateScroll = 0x2E;
 
         private WirekiteDevice device;
-        private UInt16 i2cPort;
+        private int i2cPort;
         private bool releasePort;
         private bool isInitialized;
         private int offset;
@@ -50,7 +50,7 @@ namespace Codecrete.Wirekite.Test.UI
         /// <summary>
         /// I2C slave address
         /// </summary>
-        public UInt16 DisplayAddress = 0x3c;
+        public int DisplayAddress = 0x3c;
 
         /// <summary>
         /// Display width in pixels
@@ -81,7 +81,7 @@ namespace Codecrete.Wirekite.Test.UI
         }
 
 
-        public OLEDDisplay(WirekiteDevice device, UInt16 i2cPort)
+        public OLEDDisplay(WirekiteDevice device, int i2cPort)
         {
             this.device = device;
             this.i2cPort = i2cPort;
@@ -210,7 +210,7 @@ namespace Codecrete.Wirekite.Test.UI
                 0x80, (byte)(SetColumnAddressHigh | ((DisplayOffset >> 4) & 0x0f)),
                 0x40
             };
-            byte[] pageData = device.SendAndRequestOnI2CPort(i2cPort, cmd, DisplayAddress, (UInt16)Width);
+            byte[] pageData = device.SendAndRequestOnI2CPort(i2cPort, cmd, DisplayAddress, Width);
             */
         }
 

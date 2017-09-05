@@ -8,10 +8,7 @@
 using Codecrete.Wirekite.Device.Messages;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Codecrete.Wirekite.Device
 {
@@ -46,6 +43,22 @@ namespace Codecrete.Wirekite.Device
         A11 = 11,
         /// <summary>Analog pin A12</summary>
         A12 = 12,
+        /// <summary>Analog pin A13</summary>
+        A13 = 13,
+        /// <summary>Analog pin A14</summary>
+        A14 = 14,
+        /// <summary>Analog pin A15</summary>
+        A15 = 15,
+        /// <summary>Analog pin A16</summary>
+        A16 = 16,
+        /// <summary>Analog pin A17</summary>
+        A17 = 17,
+        /// <summary>Analog pin A18</summary>
+        A18 = 18,
+        /// <summary>Analog pin A19</summary>
+        A19 = 19,
+        /// <summary>Analog pin A20</summary>
+        A20 = 20,
         /// <summary> Vref / Vref high</summary>
         VREF = 128,
         /// <summary>Temperature</summary>
@@ -60,13 +73,13 @@ namespace Codecrete.Wirekite.Device
     /// Delegate called periodically to notify about the analog input value.
     /// </summary>
     /// <param name="port">the port ID associated with the analog input</param>
-    /// <param name="value">the input value in the range between -32'768 and +32'767</param>
-    public delegate void AnalogInputCallback(UInt16 port, int value);
+    /// <param name="value">the input value in the range between -1.0 and +1.0</param>
+    public delegate void AnalogInputCallback(int port, double value);
 
 
     public partial class WirekiteDevice
     {
-        private ConcurrentDictionary<UInt16, AnalogInputCallback> _analogInputCallbacks = new ConcurrentDictionary<ushort, AnalogInputCallback>();
+        private ConcurrentDictionary<int, AnalogInputCallback> _analogInputCallbacks = new ConcurrentDictionary<int, AnalogInputCallback>();
 
 
         /// <summary>
@@ -77,7 +90,7 @@ namespace Codecrete.Wirekite.Device
         /// </remarks>
         /// <param name="pin">the analog pin (as per Teensy documentation)</param>
         /// <returns>the port ID of the configured analog input</returns>
-        public UInt16 ConfigureAnalogInputPin(AnalogPin pin)
+        public int ConfigureAnalogInputPin(AnalogPin pin)
         {
             Port port = ConfigureAnalogInput(pin, 0);
             return port.Id;
@@ -94,7 +107,7 @@ namespace Codecrete.Wirekite.Device
         /// <remarks>
         /// The notification delegate is called on a background thread.
         /// </remarks>
-        public UInt16 ConfigureAnalogInputPin(AnalogPin pin, int interval, AnalogInputCallback callback)
+        public int ConfigureAnalogInputPin(AnalogPin pin, int interval, AnalogInputCallback callback)
         {
             if (interval == 0)
             {
@@ -128,12 +141,12 @@ namespace Codecrete.Wirekite.Device
         /// Releases a analog input and frees the pin for other use
         /// </summary>
         /// <param name="port">the port ID of the analog input</param>
-        public void ReleaseAnalogPin(UInt16 port)
+        public void ReleaseAnalogPin(int port)
         {
             ConfigRequest request = new ConfigRequest
             {
                 Action = Message.ConfigActionRelease,
-                PortId = port
+                PortId = (UInt16)port
             };
 
             SendConfigRequest(request);
@@ -149,8 +162,8 @@ namespace Codecrete.Wirekite.Device
         /// Reads the value of the analog input.
         /// </summary>
         /// <param name="port">the analog input's port ID</param>
-        /// <returns>the input value in the range between 0 and 32'767</returns>
-        public int ReadAnalogPin(UInt16 port)
+        /// <returns>the input value in the range between -1.0 and 1.0</returns>
+        public double ReadAnalogPin(int port)
         {
             Port p = _ports.GetPort(port);
             if (p == null)
@@ -158,13 +171,14 @@ namespace Codecrete.Wirekite.Device
 
             PortRequest request = new PortRequest
             {
-                PortId = port,
+                PortId = (UInt16)port,
                 Action = Message.PortActionGetValue
             };
             SendPortRequest(request);
 
             PortEvent evt = p.WaitForEvent();
-            return (int)(Int16)evt.Value1;
+            Int32 v = (Int32)evt.Value1;
+            return v < 0 ? v / 2147483648.0 : v / 2147483647.0;
         }
 
 
@@ -182,8 +196,9 @@ namespace Codecrete.Wirekite.Device
                 }
                 else
                 {
-                    int value = (int)(UInt16)evt.Value1;
-                    port.LastSample = (UInt16)value;
+                    Int32 v = (Int32)evt.Value1;
+                    double value = v < 0 ? v / 2147483648.0 : v / 2147483647.0;
+                    port.LastSample = evt.Value1;
 
                     if (_analogInputCallbacks.TryGetValue(port.Id, out AnalogInputCallback callback))
                     {

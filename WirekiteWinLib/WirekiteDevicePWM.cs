@@ -1,40 +1,9 @@
 ﻿using Codecrete.Wirekite.Device.Messages;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Codecrete.Wirekite.Device
 {
-    /// <summary>
-    /// PWM pin as labelled in Teensy board
-    /// </summary>
-    public enum PWMPin
-    {
-        /// <summary>Pin 3</summary>
-        Pin3 = 0,
-        /// <summary>Pin 3</summary>
-        Pin4 = 1,
-        /// <summary>Pin 3</summary>
-        Pin6 = 2,
-        /// <summary>Pin 3</summary>
-        Pin9 = 3,
-        /// <summary>Pin 3</summary>
-        Pin10 = 4,
-        /// <summary>Pin 3</summary>
-        Pin16 = 5,
-        /// <summary>Pin 3</summary>
-        Pin17 = 6,
-        /// <summary>Pin 3</summary>
-        Pin20 = 7,
-        /// <summary>Pin 3</summary>
-        Pin22 = 8,
-        /// <summary>Pin 3</summary>
-        Pin23 = 9
-    }
-
-
     /// <summary>
     /// Additional features of PWM timers
     /// </summary>
@@ -70,15 +39,17 @@ namespace Codecrete.Wirekite.Device
         /// <summary>
         /// Configures a pin as a PWM output.
         /// </summary>
-        /// <param name="pin">the pin</param>
+        /// <param name="pin">the pin as labelled on the board</param>
+        /// <param name="initialDutyCycle">the initial duty cycle between 0.0 for 0% and 1.0 for 100%</param>
         /// <returns>the PWM output's port ID</returns>
-        public UInt16 ConfigurePWMOutputPin(PWMPin pin)
+        public int ConfigurePWMOutputPin(int pin, double initialDutyCycle = 0.0)
         {
             ConfigRequest request = new ConfigRequest
             {
                 Action = Message.ConfigActionConfigPort,
                 PortType = Message.PortTypePWM,
-                PinConfig = (UInt16)pin
+                PinConfig = (UInt16)pin,
+                Value1 = (UInt32)(initialDutyCycle * 2147483647 + 0.5)
             };
 
             ConfigResponse response = SendConfigRequest(request);
@@ -92,12 +63,12 @@ namespace Codecrete.Wirekite.Device
         /// Releases a pin configured as a PWM output.
         /// </summary>
         /// <param name="port">the PWM output's port ID</param>
-        public void ReleasePWMPin(UInt16 port)
+        public void ReleasePWMPin(int port)
         {
             ConfigRequest request = new ConfigRequest
             {
                 Action = Message.ConfigActionRelease,
-                PortId = port
+                PortId = (UInt16)port
             };
 
             SendConfigRequest(request);
@@ -167,14 +138,14 @@ namespace Codecrete.Wirekite.Device
         /// Sets the duty cycle of a PWM output
         /// </summary>
         /// <param name="port">the PWM output's port ID</param>
-        /// <param name="dutyCycle">the duty cycle between 0 (for 0%) and 32,767 (for 100%)</param>
-        public void WritePWMPin(UInt16 port, int dutyCycle)
+        /// <param name="dutyCycle">the duty cycle between 0.0 (for 0%) and 1.0 (for 100%)</param>
+        public void WritePWMPin(int port, double dutyCycle)
         {
             PortRequest request = new PortRequest
             {
-                PortId = port,
+                PortId = (UInt16)port,
                 Action = Message.PortActionSetValue,
-                Value1 = (UInt32)dutyCycle
+                Value1 = (UInt32)(dutyCycle * 2147483647 + 0.5)
             };
 
             SendPortRequest(request);

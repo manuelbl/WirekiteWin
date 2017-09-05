@@ -29,7 +29,7 @@ namespace Codecrete.Wirekite.Device
         internal UInt16 Id { get; private set; }
         internal PortType Type { get; private set; }
 
-        internal UInt16 LastSample;
+        internal UInt32 LastSample;
         private BlockingCollection<PortEvent> _eventQueue;
 
 

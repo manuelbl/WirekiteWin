@@ -13,11 +13,11 @@ namespace Codecrete.Wirekite.Device
     internal class PortList
     {
         private readonly object _synch = new object();
-        private Dictionary<UInt16, Port> _ports = new Dictionary<ushort, Port>();
+        private Dictionary<int, Port> _ports = new Dictionary<int, Port>();
         private UInt16 _lastRequestId = 0;
 
 
-        internal Port GetPort(UInt16 portId)
+        internal Port GetPort(int portId)
         {
             lock (_synch)
             {
@@ -33,7 +33,7 @@ namespace Codecrete.Wirekite.Device
             }
         }
 
-        internal void RemovePort(UInt16 portId)
+        internal void RemovePort(int portId)
         {
             lock (_synch)
             {

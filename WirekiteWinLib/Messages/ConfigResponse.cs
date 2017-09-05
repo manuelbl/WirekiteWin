@@ -16,10 +16,11 @@ namespace Codecrete.Wirekite.Device.Messages
         internal UInt16 PortId;
         internal UInt16 RequestId;
         internal UInt16 Optional1;
+        internal UInt32 Value1;
 
         internal override int GetMinimumLength()
         {
-            return 12;
+            return 16;
         }
 
         internal override void Read(byte[] buf, int offset)
@@ -29,6 +30,7 @@ namespace Codecrete.Wirekite.Device.Messages
             PortId = ReadUInt16(buf, offset + 6);
             RequestId = ReadUInt16(buf, offset + 8);
             Optional1 = ReadUInt16(buf, offset + 10);
+            Value1 = ReadUInt32(buf, offset + 12);
         }
 
         internal override void Write(byte[] buf, int offset)

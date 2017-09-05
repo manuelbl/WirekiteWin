@@ -21,8 +21,10 @@ namespace Codecrete.Wirekite.Device
         I2CPinsSCL16_SDA17 = 0,
         /// <summary> SCL/SDA pin pair 19/18 for I2C module 0 </summary>
         I2CPinsSCL19_SDA18 = 1,
-        /// <summary> SCL/SDA pin pair 22/23 for I2C module 1 </summary>
-        I2CPinsSCL22_SDA23 = 2
+        /// <summary> SCL/SDA pin pair 22/23 for I2C module 1 (Teensy LC only)</summary>
+        I2CPinsSCL22_SDA23 = 2,
+        /// <summary> SCL/SDA pin pair 29/30 for I2C module 1 (Teensy 3.2 only)</summary>
+        I2CPinsSCL29_SDA30 = 2
     };
 
     /// <summary>
@@ -40,10 +42,14 @@ namespace Codecrete.Wirekite.Device
         AddressNAK = 3,
         /// <summary> Transmitted data was not acknowledged </summary>
         DataNAK = 4,
-        /// <summary> Invalid parameters were specified </summary>
-        InvalidParameter = 5,
         /// <summary> Insufficient memory in Wirekite device to process transaction</summary>
-        OutOfMemory = 6
+        OutOfMemory = 5,
+        /// <summary> I2C bus is busy </summary>
+        BusBusy = 6,
+        /// <summary> Unknown error occurred </summary>
+        Unknwon = 7,
+        /// <summary> Invalid parameters were specified </summary>
+        InvalidParameter = 8
     };
 
     public partial class WirekiteDevice
@@ -58,7 +64,7 @@ namespace Codecrete.Wirekite.Device
         /// <param name="pins">the SCL/SDA pin pair for the port</param>
         /// <param name="frequency">the frequency of for the I2C communication (in Hz). If in doubt, use 100,000 Hz.</param>
         /// <returns>the I2C port ID</returns>
-        public UInt16 ConfigureI2CMaster(I2CPins pins, int frequency)
+        public int ConfigureI2CMaster(I2CPins pins, int frequency)
         {
             ConfigRequest request = new ConfigRequest
             {
@@ -77,12 +83,12 @@ namespace Codecrete.Wirekite.Device
         /// Releases the I2C port.
         /// </summary>
         /// <param name="port">the I2C port ID</param>
-        public void ReleaseI2CPort(UInt16 port)
+        public void ReleaseI2CPort(int port)
         {
             ConfigRequest request = new ConfigRequest
             {
                 Action = Message.ConfigActionRelease,
-                PortId = port
+                PortId = (UInt16)port
             };
 
             SendConfigRequest(request);
@@ -98,7 +104,7 @@ namespace Codecrete.Wirekite.Device
         /// </summary>
         /// <param name="port">the I2C port ID</param>
         /// <returns>the result code of the last operation on this port</returns>
-        public I2CResult GetLastI2CResult(UInt16 port)
+        public I2CResult GetLastI2CResult(int port)
         {
             Port p = _ports.GetPort(port);
             if (p == null)
@@ -129,7 +135,7 @@ namespace Codecrete.Wirekite.Device
         /// <param name="data">the data to transmit</param>
         /// <param name="slave">the slave address</param>
         /// <returns>the number of sent bytes</returns>
-        public int SendOnI2CPort(UInt16 port, byte[] data, UInt16 slave)
+        public int SendOnI2CPort(int port, byte[] data, int slave)
         {
             Port p = _ports.GetPort(port);
             if (p == null)
@@ -160,7 +166,7 @@ namespace Codecrete.Wirekite.Device
         /// <param name="port">the I2C port ID</param>
         /// <param name="data">the data to transmit</param>
         /// <param name="slave">the slave address</param>
-        public void SubmitOnI2CPort(UInt16 port, byte[] data, UInt16 slave)
+        public void SubmitOnI2CPort(int port, byte[] data, int slave)
         {
             Port p = _ports.GetPort(port);
             if (p == null)
@@ -188,7 +194,7 @@ namespace Codecrete.Wirekite.Device
         /// <param name="slave">the slave address</param>
         /// <param name="receiveLength">the number of bytes of data requested from the slave</param>
         /// <returns>the received data or <c>null</c> if it fails</returns>
-        public byte[] RequestDataOnI2CPort(UInt16 port, UInt16 slave, UInt16 receiveLength)
+        public byte[] RequestDataOnI2CPort(int port, int slave, int receiveLength)
         {
             Port p = _ports.GetPort(port);
             if (p == null)
@@ -197,11 +203,11 @@ namespace Codecrete.Wirekite.Device
             UInt16 requestId = _ports.NextRequestId();
             PortRequest request = new PortRequest
             {
-                PortId = port,
+                PortId = (UInt16)port,
                 Action = Message.PortActionRxData,
-                ActionAttribute2 = slave,
+                ActionAttribute2 = (UInt16)slave,
                 RequestId = requestId,
-                Value1 = receiveLength
+                Value1 = (UInt16)receiveLength
             };
 
             WriteMessage(request);
@@ -227,7 +233,7 @@ namespace Codecrete.Wirekite.Device
         /// </para>
         /// <para>
         /// If less than the specified number of bytes are transmitted, `nil` is returned and
-        /// <see cref="GetLastI2CResult(ushort)"/> returns the associated reason.
+        /// <see cref="GetLastI2CResult(int)"/> returns the associated reason.
         /// </para>
         /// </remarks>
         /// <param name="port">the I2C port ID</param>
@@ -235,7 +241,7 @@ namespace Codecrete.Wirekite.Device
         /// <param name="slave">the slave address</param>
         /// <param name="receiveLength">the number of bytes of data request from the slave</param>
         /// <returns>the received data or <c>null</c> if the transaction fails</returns>
-        public byte[] SendAndRequestOnI2CPort(UInt16 port, byte[] data, UInt16 slave, UInt16 receiveLength)
+        public byte[] SendAndRequestOnI2CPort(int port, byte[] data, int slave, int receiveLength)
         {
             Port p = _ports.GetPort(port);
             if (p == null)
@@ -244,12 +250,12 @@ namespace Codecrete.Wirekite.Device
             UInt16 requestId = _ports.NextRequestId();
             PortRequest request = new PortRequest
             {
-                PortId = port,
+                PortId = (UInt16)port,
                 Action = Message.PortActionTxNRxData,
                 Data = data,
-                ActionAttribute2 = slave,
+                ActionAttribute2 = (UInt16)slave,
                 RequestId = requestId,
-                Value1 = receiveLength
+                Value1 = (UInt16)receiveLength
             };
 
             WriteMessage(request);
@@ -259,14 +265,14 @@ namespace Codecrete.Wirekite.Device
             return response.Data;
         }
 
-        private void SubmitI2CTx(UInt16 port, byte[] data, UInt16 slave, UInt16 requestId)
+        private void SubmitI2CTx(int port, byte[] data, int slave, UInt16 requestId)
         {
             PortRequest request = new PortRequest
             {
-                PortId = port,
+                PortId = (UInt16)port,
                 Action = Message.PortActionTxData,
                 Data = data,
-                ActionAttribute2 = slave,
+                ActionAttribute2 = (UInt16)slave,
                 RequestId = requestId
             };
 

@@ -16,10 +16,10 @@ namespace Codecrete.Wirekite.Test.UI
     {
 
         private WirekiteDevice device;
-        private UInt16 i2cPort;
+        private int i2cPort;
         private bool releasePort;
 
-        public UInt16 GyroAddress = 0x68;
+        public int GyroAddress = 0x68;
 
         private int gyroXOffset = 0;
         private int gyroYOffset = 0;
@@ -47,7 +47,7 @@ namespace Codecrete.Wirekite.Test.UI
         }
 
 
-        public GyroMPU6050(WirekiteDevice device, UInt16 i2cPort)
+        public GyroMPU6050(WirekiteDevice device, int i2cPort)
         {
             this.device = device;
             this.i2cPort = i2cPort;
@@ -98,7 +98,7 @@ namespace Codecrete.Wirekite.Test.UI
         private byte[] ReadBytes(byte startRegister, int numBytes)
         {
             byte[] sendData = new byte[] { startRegister };
-            byte[] receivedData = device.SendAndRequestOnI2CPort(i2cPort, sendData, GyroAddress, (UInt16)numBytes);
+            byte[] receivedData = device.SendAndRequestOnI2CPort(i2cPort, sendData, GyroAddress, numBytes);
             if (receivedData.Length != numBytes)
                 throw new Exception("Failed to read gyro values");
             return receivedData;
