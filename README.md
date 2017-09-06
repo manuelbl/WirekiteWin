@@ -9,7 +9,7 @@ This repository contains the Windows code. There are separate repositories for t
 ## Supported boards
 
 - [Teensy LC](https://www.pjrc.com/store/teensylc.html)
-- [Teensy 3.2](https://www.pjrc.com/store/teensy32.html) (soon)
+- [Teensy 3.2](https://www.pjrc.com/store/teensy32.html)
 
 ## Supported inputs / outputs / protocols
 
@@ -18,6 +18,7 @@ This repository contains the Windows code. There are separate repositories for t
 - Analog input
 - PWM output
 - I2C
+- SPI (soon)
 
 
 # Getting started
