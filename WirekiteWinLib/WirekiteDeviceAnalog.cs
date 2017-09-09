@@ -86,7 +86,7 @@ namespace Codecrete.Wirekite.Device
         /// Configure a pin as an analog input
         /// </summary>
         /// <remarks>
-        /// The analog input value can be read on demand with <see cref="ReadAnalogPin(ushort)"/>
+        /// The analog input value can be read on demand with <see cref="ReadAnalogPin(int)"/>
         /// </remarks>
         /// <param name="pin">the analog pin (as per Teensy documentation)</param>
         /// <returns>the port ID of the configured analog input</returns>

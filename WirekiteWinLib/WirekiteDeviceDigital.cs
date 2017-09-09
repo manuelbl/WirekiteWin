@@ -101,7 +101,7 @@ namespace Codecrete.Wirekite.Device
         /// </summary>
         /// <param name="pin">the pin number (as labelled on the Teensy)</param>
         /// <param name="attributes">additional features to be configured for the output pin</param>
-        /// <param param name="initialValue">initial value of pin (true for high, false for low)</param>
+        /// <param name="initialValue">initial value of pin (true for high, false for low)</param>
         /// <returns>the port ID for further operations on the configured digital output</returns>
         public int ConfigureDigitalOutputPin(int pin, DigitalOutputPinAttributes attributes, bool initialValue = false)
         {
@@ -153,7 +153,7 @@ namespace Codecrete.Wirekite.Device
         /// Configure a pin as a digital input
         /// </summary>
         /// <remarks>
-        /// The digital input value can be read with <see cref="ReadDigitalPin(ushort)"/>
+        /// The digital input value can be read with <see cref="ReadDigitalPin(int)"/>
         /// </remarks>
         /// <param name="pin">the pin number (as labelled on the Teensy board)</param>
         /// <param name="attributes">additional features to be configured</param>

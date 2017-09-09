@@ -128,7 +128,7 @@ namespace Codecrete.Wirekite.Device
         /// </para>
         /// <para>
         /// If less than the specified number of bytes are transmitted,
-        /// <see cref="GetLastI2CResult(ushort)"/> returns the associated reason.
+        /// <see cref="GetLastI2CResult(int)"/> returns the associated reason.
         /// </para>
         /// </remarks>
         /// <param name="port">the I2C port ID</param>
@@ -187,7 +187,7 @@ namespace Codecrete.Wirekite.Device
         /// <para>
         /// The operation is executed sychnronously, i.e. the call blocks until the
         /// transaction has been completed or has failed.If the transaction fails,
-        /// use <see cref="GetLastI2CResult(ushort)"/> to retrieve the reason
+        /// use <see cref="GetLastI2CResult(int)"/> to retrieve the reason
         /// </para>
         /// </remarks>
         /// <param name="port">the I2C port ID</param>
