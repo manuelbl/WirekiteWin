@@ -4,7 +4,8 @@ Wire up digital and analog IOs to your PC and control them with your C# / VB.NET
 
 To connect the inputs and outputs, use a [Teensy development board](https://www.pjrc.com/teensy/) connected via USB. It looks a lot like an Arduino Nano connected for programming. Yet with Wirekite the custom code is written for and run on your computer – not for the microcontroller.
 
-This repository contains the Windows code. There are separate repositories for the [Teensy code](https://github.com/manuelbl/Wirekite) and the [MacOS code](https://github.com/manuelbl/WirekiteMac).
+See the [Wiki](https://github.com/manuelbl/Wirekite/wiki) for more information and [how to get started](https://github.com/manuelbl/Wirekite/wiki/Visual-Studio-Project-Setup).
+
 
 ## Supported boards
 
@@ -21,15 +22,16 @@ This repository contains the Windows code. There are separate repositories for t
 - SPI (soon)
 
 
-# Getting started
+## Repositories
 
-### 1. Prepare the Teensy board for Wirekite
+There are three repositories:
 
-Download the ready-to-use code for the Teensy and install it on your Teensy board. This is a one-time step.
+ - [Wirekite](https://github.com/manuelbl/Wirekite) – code for the Teensy board and home of the [Wiki](https://github.com/manuelbl/Wirekite/wiki)
+ - [WirekiteMac](https://github.com/manuelbl/WirekiteMac) – the Mac libraries for using the Wirekite in Objective-C or Swift on a Macintosh
+ - [WirekiteWin](https://github.com/manuelbl/WirekiteWin) – the .NET libraries for using the Wirekite in C# or VB.NET on a Windows computer  (this repository)
 
-[See instructions](https://github.com/manuelbl/Wirekite/blob/master/docs/prepare_teensy.md)
 
-### 2. Create your first project
+## Coming soon
 
-Coming soon...
-
+- SPI
+- More options for analog inputs
