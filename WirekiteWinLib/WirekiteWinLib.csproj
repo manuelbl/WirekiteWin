@@ -53,10 +53,10 @@
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\PortEvent.cs" />
     <Compile Include="Messages\PortRequest.cs" />
-    <Compile Include="NativeMethods.cs" />
-    <Compile Include="PendingResponseList.cs" />
-    <Compile Include="Port.cs" />
-    <Compile Include="PortList.cs" />
+    <Compile Include="USB\NativeMethods.cs" />
+    <Compile Include="USB\PendingResponseList.cs" />
+    <Compile Include="USB\Port.cs" />
+    <Compile Include="USB\PortList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WirekiteDevice.cs" />
     <Compile Include="WirekiteDeviceAnalog.cs" />

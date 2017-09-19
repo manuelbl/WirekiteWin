@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 
-namespace Codecrete.Wirekite.Device
+namespace Codecrete.Wirekite.Device.USB
 {
     internal class NativeMethods
     {

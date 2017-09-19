@@ -9,7 +9,7 @@ using Codecrete.Wirekite.Device.Messages;
 using System;
 using System.Collections.Concurrent;
 
-namespace Codecrete.Wirekite.Device
+namespace Codecrete.Wirekite.Device.USB
 {
     internal enum PortType
     {

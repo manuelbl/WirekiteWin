@@ -1,4 +1,5 @@
 ﻿using Codecrete.Wirekite.Device.Messages;
+using Codecrete.Wirekite.Device.USB;
 using System;
 
 

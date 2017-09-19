@@ -6,12 +6,13 @@
  */
 
 using Codecrete.Wirekite.Device.Messages;
+using Codecrete.Wirekite.Device.USB;
 using Microsoft.Win32.SafeHandles;
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
-using static Codecrete.Wirekite.Device.NativeMethods;
+using static Codecrete.Wirekite.Device.USB.NativeMethods;
 
 
 namespace Codecrete.Wirekite.Device

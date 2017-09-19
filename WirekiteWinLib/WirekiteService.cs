@@ -8,7 +8,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using static Codecrete.Wirekite.Device.NativeMethods;
+using static Codecrete.Wirekite.Device.USB.NativeMethods;
 using System.Windows;
 using System.Windows.Interop;
 using System.Collections.Generic;

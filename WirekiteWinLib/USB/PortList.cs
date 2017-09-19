@@ -8,7 +8,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Codecrete.Wirekite.Device
+namespace Codecrete.Wirekite.Device.USB
 {
     internal class PortList
     {

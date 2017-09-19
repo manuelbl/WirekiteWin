@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Codecrete.Wirekite.Device
+namespace Codecrete.Wirekite.Device.USB
 {
     internal struct PendingResponse
     {
