@@ -14,3 +14,10 @@ bld/
 [Oo]bj/
 [Ll]og/
 .vs/
+
+**/packages/*
+!**/packages/repositories.config
+
+_site/
+_site.zip
+log.txt
