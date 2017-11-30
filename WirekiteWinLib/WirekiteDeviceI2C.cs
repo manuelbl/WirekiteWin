@@ -8,6 +8,7 @@
 using Codecrete.Wirekite.Device.Messages;
 using Codecrete.Wirekite.Device.USB;
 using System;
+using System.Diagnostics;
 
 
 namespace Codecrete.Wirekite.Device
@@ -99,7 +100,39 @@ namespace Codecrete.Wirekite.Device
             _ports.RemovePort(port);
         }
 
-        
+
+        /// <summary>
+        /// Reset the I2C bus
+        /// </summary>
+        /// <remarks>
+        /// If an I2C transaction is interrupted, a slave can still hold on to SDA
+        /// because it believes to be in the middle of a byte.
+        /// By toggling SCL up to 9 times, most slaves let go of SDA.
+        /// This method can be used if an I2C operation returns a "bus busy" error.
+        /// </remarks>
+        /// <param name="port">hte I2C port ID</param>
+        public void ResetBusOnI2CPort(int port)
+        {
+            if (_deviceState == DeviceState.Closed)
+                return; // silently ignore
+
+            Port p = _ports.GetPort(port);
+            if (p == null)
+                return;
+
+            PortRequest request = new PortRequest
+            {
+                Action = Message.PortActionReset,
+                PortId = (UInt16)port
+            };
+
+            WaitUntilAvailable(request);
+
+            PortEvent response = _pendingRequests.WaitForResponse(request.RequestId) as PortEvent;
+            p.LastSample = response.EventAttribute1; // status code
+        }
+
+
         /// <summary>
         /// Result code of the last send or receive
         /// </summary>
@@ -138,14 +171,19 @@ namespace Codecrete.Wirekite.Device
         /// <returns>the number of sent bytes</returns>
         public int SendOnI2CPort(int port, byte[] data, int slave)
         {
+            if (_deviceState == DeviceState.Closed)
+            {
+                Debug.Write("Wirekite: Device has been closed or disconnected. I2C operation is ignored.");
+                return 0;
+            }
+
             Port p = _ports.GetPort(port);
             if (p == null)
                 throw new WirekiteException(String.Format("Invalid port ID {0}", port));
 
-            UInt16 requestId = _ports.NextRequestId();
-            SubmitI2CTx(port, data, slave, requestId);
+            UInt16 requestId = SubmitI2CTx(port, data, slave);
 
-            PortEvent response = _pendingResponses.WaitForResponse(requestId) as PortEvent;
+            PortEvent response = _pendingRequests.WaitForResponse(requestId) as PortEvent;
             p.LastSample = response.EventAttribute1; // status code
             return response.EventAttribute2;
         }
@@ -169,11 +207,17 @@ namespace Codecrete.Wirekite.Device
         /// <param name="slave">the slave address</param>
         public void SubmitOnI2CPort(int port, byte[] data, int slave)
         {
+            if (_deviceState == DeviceState.Closed)
+            {
+                Debug.Write("Wirekite: Device has been closed or disconnected. I2C operation is ignored.");
+                return;
+            }
+
             Port p = _ports.GetPort(port);
             if (p == null)
                 throw new WirekiteException(String.Format("Invalid port ID {0}", port));
 
-            SubmitI2CTx(port, data, slave, 0);
+            SubmitI2CTx(port, data, slave);
         }
 
 
@@ -201,19 +245,18 @@ namespace Codecrete.Wirekite.Device
             if (p == null)
                 throw new WirekiteException(String.Format("Invalid port ID {0}", port));
 
-            UInt16 requestId = _ports.NextRequestId();
             PortRequest request = new PortRequest
             {
                 PortId = (UInt16)port,
                 Action = Message.PortActionRxData,
                 ActionAttribute2 = (UInt16)slave,
-                RequestId = requestId,
                 Value1 = (UInt16)receiveLength
             };
 
+            WaitUntilAvailable(request);
             WriteMessage(request);
 
-            PortEvent response = _pendingResponses.WaitForResponse(requestId) as PortEvent;
+            PortEvent response = _pendingRequests.WaitForResponse(request.RequestId) as PortEvent;
             p.LastSample = response.EventAttribute1; // status code
             return response.Data;
         }
@@ -248,36 +291,37 @@ namespace Codecrete.Wirekite.Device
             if (p == null)
                 throw new WirekiteException(String.Format("Invalid port ID {0}", port));
 
-            UInt16 requestId = _ports.NextRequestId();
             PortRequest request = new PortRequest
             {
                 PortId = (UInt16)port,
                 Action = Message.PortActionTxNRxData,
                 Data = data,
                 ActionAttribute2 = (UInt16)slave,
-                RequestId = requestId,
                 Value1 = (UInt16)receiveLength
             };
 
+            WaitUntilAvailable(request);
             WriteMessage(request);
 
-            PortEvent response = _pendingResponses.WaitForResponse(requestId) as PortEvent;
+            PortEvent response = _pendingRequests.WaitForResponse(request.RequestId) as PortEvent;
             p.LastSample = response.EventAttribute1; // status code
             return response.Data;
         }
 
-        private void SubmitI2CTx(int port, byte[] data, int slave, UInt16 requestId)
+        private UInt16 SubmitI2CTx(int port, byte[] data, int slave)
         {
             PortRequest request = new PortRequest
             {
                 PortId = (UInt16)port,
                 Action = Message.PortActionTxData,
                 Data = data,
-                ActionAttribute2 = (UInt16)slave,
-                RequestId = requestId
+                ActionAttribute2 = (UInt16)slave
             };
 
+            WaitUntilAvailable(request);
             WriteMessage(request);
+
+            return request.RequestId;
         }
 
 
@@ -288,7 +332,10 @@ namespace Codecrete.Wirekite.Device
                 throw new WirekiteException(String.Format("Invalid port ID {0}", evt.PortId));
 
             if (evt.RequestId != 0)
-                _pendingResponses.PutResponse(evt.RequestId, evt);
+            {
+                _throttler.RequestCompleted(evt.RequestId);
+                _pendingRequests.PutResponse(evt.RequestId, evt);
+            }
         }
 
     }

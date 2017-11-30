@@ -8,6 +8,7 @@
 using Codecrete.Wirekite.Device;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -20,8 +21,9 @@ namespace Codecrete.Wirekite.Test.UI
     /// </summary>
     public partial class MainWindow : Window, IWirekiteDeviceNotification, IDisposable
     {
-        private const bool useLEDBoard = true;
-        private const bool useI2CBoard= false;
+        private const bool useLEDBoard = false;
+        private const bool useI2CBoard = false;
+        private const bool useSPIBoard = true;
         private const bool hasBuiltInLED = true;
         
         private WirekiteDevice _device;
@@ -58,7 +60,9 @@ namespace Codecrete.Wirekite.Test.UI
         private Ammeter _ammeter;
 
         private OLEDDisplay _display;
-        private Timer _displayTimer;
+
+        private int _spiPort;
+        private ColorTFT _colorTFT;
 
 
         public MainWindow()
@@ -114,12 +118,6 @@ namespace Codecrete.Wirekite.Test.UI
                     text = string.Format("{0} mA", current);
                 ammeterValueLabel.Content = text;
             });
-        }
-
-
-        public void UpdateDisplay(object stateInfo)
-        {
-            _display.Update();
         }
 
 
@@ -214,9 +212,20 @@ namespace Codecrete.Wirekite.Test.UI
                 _ammeter = new Ammeter(_device, _i2cPort);
                 _ammeterTimer = new Timer(ReadAmmeter, null, 300, 350);
 
-                _display = new OLEDDisplay(_device, _i2cPort);
-                _display.DisplayOffset = 2;
-                _displayTimer = new Timer(UpdateDisplay, null, 500, 40);
+                _display = new OLEDDisplay(_device, _i2cPort)
+                {
+                    DisplayOffset = 2
+                };
+                StartOLEDShow();
+            }
+
+            if (useSPIBoard)
+            {
+                //_spiPort = _device.ConfigureSPIMaster(20, 21, WirekiteDevice.InvalidPort, 1000000, SPIAttributes.Default);
+                _spiPort = _device.ConfigureSPIMaster(14, 11, WirekiteDevice.InvalidPortId, 12000000, SPIAttributes.Default);
+                _colorTFT = new ColorTFT(_device, _spiPort, 6, 4, 5);
+
+                StartColorShow();
             }
         }
 
@@ -244,11 +253,6 @@ namespace Codecrete.Wirekite.Test.UI
             {
                 _ammeterTimer.Dispose();
                 _ammeterTimer = null;
-            }
-            if (_displayTimer != null)
-            {
-                _displayTimer.Dispose();
-                _displayTimer = null;
             }
         }
 
@@ -281,6 +285,86 @@ namespace Codecrete.Wirekite.Test.UI
 
             _device.WriteDigitalPin(led, ((CheckBox)sender).IsChecked.Value);
         }
+
+
+        private void StartOLEDShow()
+        {
+            Task.Run(() => { OLEDShow(); });
+        }
+
+
+        private void OLEDShow()
+        {
+            float stringWidth = 0;
+            float offset = 0;
+
+            while (!_device.IsClosed)
+            {
+                _display.ShowFrame((g) =>
+                {
+                    g.Clear(System.Drawing.Color.Black);
+                    // Might only work in Windows 10
+                    string text = "\uE007 \uE209 \uE706 \uE774 \uE83D \uE928 \uEA8E \ue007 \uE209";
+                    System.Drawing.Font font = new System.Drawing.Font("Segoe MDL2 Assets", 64);
+                    g.MeasureString(text, font);
+                    g.DrawString(text, font, new System.Drawing.SolidBrush(System.Drawing.Color.White), new System.Drawing.PointF(-offset, 0));
+
+                    if (stringWidth == 0)
+                    {
+                        System.Drawing.SizeF size = g.MeasureString("\uE007 \uE209 \uE706 \uE774 \uE83D \uE928 \uEA8E", font);
+                        stringWidth = size.Width - 64 / 6.0f - 6;
+                    }
+                });
+
+                offset++;
+                if (offset >= stringWidth)
+                    offset = 0;
+            }
+        }
+
+
+        private void StartColorShow()
+        {
+            Task.Run(() => ColorShow());
+        }
+
+
+        private void ColorShow()
+        {
+            byte[] pixelData = new byte[128 * 160 * 2];
+            for (int i = 0; i < pixelData.Length; i += 2)
+            {
+                pixelData[i] = 0xff;
+                pixelData[i + 1] = 0xff;
+            }
+            _colorTFT.Draw(pixelData, 128, 0, 0);
+
+            byte[] fruitStrip;
+
+            using (System.Drawing.Image img = System.Drawing.Image.FromFile("Fruits.png"))
+            {
+                using (GraphicsBuffer graphics = new GraphicsBuffer(48, 540, true))
+                {
+                    fruitStrip = graphics.Draw((g) =>
+                    {
+                        g.DrawImage(img, new System.Drawing.Rectangle(0, 0, 48, 540),
+                            new System.Drawing.Rectangle(0, 0, 48, 540), System.Drawing.GraphicsUnit.Pixel);
+                    }, GraphicsFormat.RGB565Rotated180);
+                }
+            }
+
+            int offset = 0;
+            while (!_device.IsClosed)
+            {
+                _colorTFT.Draw(fruitStrip, 48, 0, offset, 48, 160, 10, 0);
+                _colorTFT.Draw(fruitStrip, 48, 0, 7 * 54 - offset, 48, 160, 70, 0);
+
+                offset += 2;
+                if (offset >= 7 * 54)
+                    offset = 0;
+            }
+        }
+
 
         #region IDisposable Support
         private bool _isDisposed = false;

@@ -58,6 +58,8 @@ namespace Codecrete.Wirekite.Device.USB
             lock (_synch)
             {
                 _lastRequestId++;
+                if (_lastRequestId >= 0xff00)
+                    _lastRequestId = 1;
                 return _lastRequestId;
             }
         }

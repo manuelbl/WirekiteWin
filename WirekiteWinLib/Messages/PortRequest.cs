@@ -11,11 +11,9 @@ namespace Codecrete.Wirekite.Device.Messages
 {
     internal class PortRequest : Message
     {
-        internal UInt16 PortId;
         internal byte Action;
         internal byte ActionAttribute1;
         internal UInt16 ActionAttribute2;
-        internal UInt16 RequestId;
         internal UInt32 Value1;
 
         private byte[] _data;
@@ -49,11 +47,9 @@ namespace Codecrete.Wirekite.Device.Messages
         {
             MessageSize = (UInt16)(16 + (Data != null ? Data.Length : 0));
             WriteHeader(buf, offset);
-            WriteUInt16(buf, offset + 4, PortId);
-            buf[offset + 6] = Action;
-            buf[offset + 7] = ActionAttribute1;
-            WriteUInt16(buf, offset + 8, ActionAttribute2);
-            WriteUInt16(buf, offset + 10, RequestId);
+            buf[offset + 8] = Action;
+            buf[offset + 9] = ActionAttribute1;
+            WriteUInt16(buf, offset + 10, ActionAttribute2);
             WriteUInt32(buf, offset + 12, Value1);
             if (Data != null)
                 Array.Copy(Data, 0, buf, offset + 16, Data.Length);

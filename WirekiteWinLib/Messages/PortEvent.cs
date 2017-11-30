@@ -12,11 +12,9 @@ namespace Codecrete.Wirekite.Device.Messages
 {
     internal class PortEvent : Message
     {
-        internal UInt16 PortId;
         internal byte Event;
         internal byte EventAttribute1;
         internal UInt16 EventAttribute2;
-        internal UInt16 RequestId;
         internal UInt32 Value1;
         internal byte[] Data;
 
@@ -29,11 +27,9 @@ namespace Codecrete.Wirekite.Device.Messages
         internal override void Read(byte[] buf, int offset)
         {
             ReadHeader(buf, offset);
-            PortId = ReadUInt16(buf, offset + 4);
-            Event = buf[offset + 6];
-            EventAttribute1 = buf[offset + 7];
-            EventAttribute2 = ReadUInt16(buf, offset + 8);
-            RequestId = ReadUInt16(buf, offset + 10);
+            Event = buf[offset + 8];
+            EventAttribute1 = buf[offset + 9];
+            EventAttribute2 = ReadUInt16(buf, offset + 10);
             Value1 = ReadUInt32(buf, offset + 12);
             if (MessageSize > 16)
             {

@@ -175,7 +175,7 @@ namespace Codecrete.Wirekite.Device
                 PortId = (UInt16)port,
                 Action = Message.PortActionGetValue
             };
-            SendPortRequest(request);
+            SubmitPortRequest(request);
 
             PortEvent evt = p.WaitForEvent();
             Int32 v = (Int32)evt.Value1;

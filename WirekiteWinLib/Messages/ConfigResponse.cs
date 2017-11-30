@@ -13,8 +13,6 @@ namespace Codecrete.Wirekite.Device.Messages
     internal class ConfigResponse : Message
     {
         internal UInt16 Result;
-        internal UInt16 PortId;
-        internal UInt16 RequestId;
         internal UInt16 Optional1;
         internal UInt32 Value1;
 
@@ -26,9 +24,7 @@ namespace Codecrete.Wirekite.Device.Messages
         internal override void Read(byte[] buf, int offset)
         {
             ReadHeader(buf, offset);
-            Result = ReadUInt16(buf, offset + 4);
-            PortId = ReadUInt16(buf, offset + 6);
-            RequestId = ReadUInt16(buf, offset + 8);
+            Result = ReadUInt16(buf, offset + 8);
             Optional1 = ReadUInt16(buf, offset + 10);
             Value1 = ReadUInt32(buf, offset + 12);
         }

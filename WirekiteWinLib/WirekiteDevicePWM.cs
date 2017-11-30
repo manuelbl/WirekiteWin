@@ -149,7 +149,7 @@ namespace Codecrete.Wirekite.Device
                 Value1 = (UInt32)(dutyCycle * 2147483647 + 0.5)
             };
 
-            SendPortRequest(request);
+            SubmitPortRequest(request);
         }
     }
 }

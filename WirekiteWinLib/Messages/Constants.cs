@@ -28,26 +28,34 @@ namespace Codecrete.Wirekite.Device.Messages
         internal const byte PortActionTxData = 3;
         internal const byte PortActionRxData = 4;
         internal const byte PortActionTxNRxData = 5;
+        internal const byte PortActionReset = 6;
 
         internal const byte PortTypeDigitalPin = 1;
         internal const byte PortTypeAnalogIn = 2;
         internal const byte PortTypePWM = 3;
         internal const byte PortTypeI2C = 4;
-
-        internal const byte ConfigModulePWMTimer = 1;
-        internal const byte ConfigModulePWMChannel = 2;
+        internal const byte PortTypeSPI = 5;
 
         internal const byte ConfigQueryMemAvail = 1;
         internal const byte ConfigQueryMemMaxBlock = 2;
         internal const byte ConfigQueryMCU = 3;
         internal const byte ConfigQueryVersion = 4;
 
+        internal const byte ConfigMCUTeensyLC = 1;
+        internal const byte ConfigMCUTeensy3_2 = 2;
+
+        internal const byte ConfigModulePWMTimer = 1;
+        internal const byte ConfigModulePWMChannel = 2;
+
         internal const byte ResultOK = 0;
         internal const byte ResultInvalidData = 1;
+        internal const byte ResultOutOfMemory = 2;
 
         internal const byte EventDodo = 0;
         internal const byte EventSingleSample = 1;
         internal const byte EventTxComplete = 2;
         internal const byte EventDataRecv = 3;
+        internal const byte EventSetDone = 4;
+        internal const byte EventError = 5;
     }
 }

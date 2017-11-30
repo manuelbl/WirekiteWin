@@ -20,7 +20,8 @@ namespace Codecrete.Wirekite.Device.USB
         AnalogInputOnDemand,
         AnalogInputSampling,
         PWMOutput,
-        I2CPort
+        I2CPort,
+        SPIPort
     }
 
 

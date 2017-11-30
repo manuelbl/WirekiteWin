@@ -14,6 +14,9 @@ namespace Codecrete.Wirekite.Device.Messages
     {
         internal UInt16 MessageSize;
         internal byte MessageType;
+        internal byte Reserved0;
+        internal UInt16 PortId;
+        internal UInt16 RequestId;
 
         internal abstract int GetMinimumLength();
         internal abstract void Write(byte[] buf, int offset);
@@ -23,7 +26,9 @@ namespace Codecrete.Wirekite.Device.Messages
         {
             WriteUInt16(buf, offset, MessageSize);
             buf[offset + 2] = MessageType;
-            buf[offset + 3] = 0;
+            buf[offset + 3] = Reserved0;
+            WriteUInt16(buf, offset + 4, PortId);
+            WriteUInt16(buf, offset + 6, RequestId);
         }
 
         internal void WriteUInt16(byte[] buf, int offset, UInt16 value)
@@ -44,6 +49,9 @@ namespace Codecrete.Wirekite.Device.Messages
         {
             MessageSize = ReadUInt16(buf, offset);
             MessageType = buf[offset + 2];
+            Reserved0 = buf[offset + 3];
+            PortId = ReadUInt16(buf, offset + 4);
+            RequestId = ReadUInt16(buf, offset + 6);
         }
 
         internal UInt16 ReadUInt16(byte[] buf, int offset)
@@ -59,7 +67,7 @@ namespace Codecrete.Wirekite.Device.Messages
             UInt32 b1 = buf[offset + 1];
             UInt32 b2 = buf[offset + 2];
             UInt32 b3 = buf[offset + 3];
-            return (UInt32)((b3 << 24) | (b2 << 16) | (b1 << 8) | b0);
+            return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;
         }
     }
 }

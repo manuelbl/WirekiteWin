@@ -38,6 +38,11 @@ namespace Codecrete.Wirekite.Device
         private const Byte RxEndpointAddress = 0x81; // endpoint 1 / IN
         private const Byte TxEndpointAddress = 0x02; // endpoint 2 / OUT
 
+        /// <summary>
+        /// Value for invalid port; used both as an input to certain functions as well as a return value of certain functions
+        /// </summary>
+        public const int InvalidPortId = 0xffff;
+
         private WirekiteService _service;
         internal String DevicePath { get; private set; }
         private SafeFileHandle _deviceHandle;
@@ -49,8 +54,9 @@ namespace Codecrete.Wirekite.Device
         private int partialMessageSize;
         private byte[] partialMessage;
 
-        private PendingResponseList _pendingResponses = new PendingResponseList();
+        private PendingRequestList _pendingRequests = new PendingRequestList();
         private PortList _ports = new PortList();
+        private Throttler _throttler = new Throttler();
 
 
         internal WirekiteDevice(WirekiteService service, String devicePath, SafeFileHandle deviceHandle, IntPtr interfaceHandle)
@@ -80,13 +86,27 @@ namespace Codecrete.Wirekite.Device
                 return;
 
             _ports.Clear();
-            _pendingResponses.Clear();
+            _throttler.Clear();
+            _pendingRequests.Clear();
             _service.RemoveDevice(this);
             WinUsb_Free(_interfaceHandle);
             _interfaceHandle = IntPtr.Zero;
             _deviceHandle.Dispose();
             _deviceHandle = null;
             _deviceState = DeviceState.Closed;
+        }
+
+
+        /// <summary>
+        /// Indicates if the device has been closed or unplugged.
+        /// </summary>
+        /// <returns><c>true</c> if it is closed</returns>
+        public bool IsClosed
+        {
+            get
+            {
+                return _deviceState == DeviceState.Closed;
+            }
         }
 
 
@@ -237,7 +257,7 @@ namespace Codecrete.Wirekite.Device
 
         private void HandleConfigResponse(ConfigResponse response)
         {
-            _pendingResponses.PutResponse(response.RequestId, response);
+            _pendingRequests.PutResponse(response.RequestId, response);
         }
 
 
@@ -265,6 +285,10 @@ namespace Codecrete.Wirekite.Device
                 case PortType.I2CPort:
                     HandleI2CEvent(evt);
                     break;
+                
+                case PortType.SPIPort:
+                    HandleSPIEvent(evt);
+                    break;
 
                 default:
                     throw new WirekiteException(String.Format("Port event received for invalid for type {0} of port ID {1}", type, evt.PortId));
@@ -289,25 +313,47 @@ namespace Codecrete.Wirekite.Device
 
             SendConfigRequest(request);
 
-            _pendingResponses.Clear();
             _ports.Clear();
+            _pendingRequests.Clear();
+            _throttler.Clear();
         }
 
         private ConfigResponse SendConfigRequest(ConfigRequest request)
         {
             if (request.RequestId == 0)
                 request.RequestId = _ports.NextRequestId();
+            _pendingRequests.AnnounceRequest(request.RequestId);
             WriteMessage(request);
-            ConfigResponse response = _pendingResponses.WaitForResponse(request.RequestId) as ConfigResponse;
+            ConfigResponse response = _pendingRequests.WaitForResponse(request.RequestId) as ConfigResponse;
             if (response.Result != 0)
                 throw new WirekiteException(String.Format("Configuration failed with code {0}", response.Result));
             return response;
         }
 
-        private void SendPortRequest(PortRequest request)
+
+        private void SubmitPortRequest(PortRequest request, bool throttle = false)
         {
             request.RequestId = _ports.NextRequestId();
+            if (throttle)
+                WaitUntilAvailable(request);
             WriteMessage(request);
+        }
+
+
+        private PortEvent SendPortRequest(PortRequest request)
+        {
+            request.RequestId = _ports.NextRequestId();
+            _pendingRequests.AnnounceRequest(request.RequestId);
+            WriteMessage(request);
+            return _pendingRequests.WaitForResponse(request.RequestId) as PortEvent;
+        }
+
+
+        private void WaitUntilAvailable(Message message)
+        {
+            if (message.RequestId == 0)
+                message.RequestId = _ports.NextRequestId();
+            _throttler.WaitUntilAvailable(message.RequestId, message.MessageSize);
         }
 
 

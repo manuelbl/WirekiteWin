@@ -139,16 +139,34 @@ namespace Codecrete.Wirekite.Device
         /// <param name="value">the output value (true for high, false for low)</param>
         public void WriteDigitalPin(int port, bool value)
         {
+            WriteDigitalPinSynchronizedWithSPI(port, value, InvalidPortId);
+        }
+
+
+        /// <summary>
+        /// Writes a value to the digial output pins and synchronizes it with an SPI port
+        /// </summary>
+        /// <remarks>
+        /// Writing a value is an asynchronous operation. The function returns immediately without awaiting
+        /// a confirmation that it has succeeded. However, the action is not executed until all already 
+        /// all SPI actions submitted to the same SPI port have been executed and before any later submitted action.
+        /// This is useful to change a signal relevant for the SPI communication such as a data/command signal.
+        /// </remarks>
+        /// <param name="port">digital output port ID</param>
+        /// <param name="value">the output value (true for high, false for low)</param>
+        /// <param name="spiPort">SPI port ID</param>
+        public void WriteDigitalPinSynchronizedWithSPI(int port, bool value, int spiPort)
+        {
             PortRequest request = new PortRequest
             {
                 PortId = (UInt16)port,
                 Action = Message.PortActionSetValue,
-                Value1 = value ? (uint)1 : (uint)0
+                Value1 = value ? (uint)1 : 0,
+                ActionAttribute2 = (UInt16)spiPort
             };
 
-            SendPortRequest(request);
+            SubmitPortRequest(request, spiPort != InvalidPortId);
         }
-
 
         /// <summary>
         /// Configure a pin as a digital input
@@ -226,7 +244,7 @@ namespace Codecrete.Wirekite.Device
                 PortId = (UInt16)port,
                 Action = Message.PortActionGetValue
             };
-            SendPortRequest(request);
+            SubmitPortRequest(request);
 
             PortEvent evt = p.WaitForEvent();
             return evt.Value1 != 0;
@@ -278,6 +296,10 @@ namespace Codecrete.Wirekite.Device
                         }
                     }
                 }
+            }
+            else if (evt.Event == Message.EventSetDone)
+            {
+                _throttler.RequestCompleted(evt.RequestId);
             }
         }
     }
