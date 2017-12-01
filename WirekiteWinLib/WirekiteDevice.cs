@@ -17,6 +17,30 @@ using static Codecrete.Wirekite.Device.USB.NativeMethods;
 
 namespace Codecrete.Wirekite.Device
 {
+    /// <summary>
+    /// Board Information
+    /// </summary>
+    public enum BoardInfo
+    {
+        /// <summary>
+        /// Available memory in bytes
+        /// </summary>
+        AvailableMemory = 1,
+        /// <summary>
+        /// Largest contiguous memory block in bytes
+        /// </summary>
+        LargestMemoryBlock = 2,
+        /// <summary>
+        /// Microcontroller board type
+        /// </summary>
+        Board = 3,
+        /// <summary>
+        /// Wirekite software version on microcontroller board
+        /// </summary>
+        Version = 4
+    }
+
+
     internal enum DeviceState
     {
         Initializing,
@@ -42,6 +66,18 @@ namespace Codecrete.Wirekite.Device
         /// Value for invalid port; used both as an input to certain functions as well as a return value of certain functions
         /// </summary>
         public const int InvalidPortId = 0xffff;
+
+
+        /// <summary>
+        /// Microcontroller board Teensy LC
+        /// </summary>
+        public const int BoardTeensyLC = 1;
+
+        /// <summary>
+        /// Microcontroller board Teensy 3.2
+        /// </summary>
+        public const int BoardTeensy3_2 = 2;
+
 
         private WirekiteService _service;
         internal String DevicePath { get; private set; }
@@ -317,6 +353,26 @@ namespace Codecrete.Wirekite.Device
             _pendingRequests.Clear();
             _throttler.Clear();
         }
+
+
+        public void ConfigureFlowControl(int memorySize, int maxOutstandingRequests)
+        {
+            _throttler.Configure(memorySize, maxOutstandingRequests);
+        }
+
+
+        public int GetBoardInfo(BoardInfo boardInfo)
+        {
+            ConfigRequest request = new ConfigRequest
+            {
+                Action = Message.ConfigActionQuery,
+                PortType = (byte)boardInfo
+            };
+
+            ConfigResponse response = SendConfigRequest(request);
+            return (int)response.Value1;
+        }
+
 
         private ConfigResponse SendConfigRequest(ConfigRequest request)
         {

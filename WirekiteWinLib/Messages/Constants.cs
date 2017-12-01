@@ -36,14 +36,6 @@ namespace Codecrete.Wirekite.Device.Messages
         internal const byte PortTypeI2C = 4;
         internal const byte PortTypeSPI = 5;
 
-        internal const byte ConfigQueryMemAvail = 1;
-        internal const byte ConfigQueryMemMaxBlock = 2;
-        internal const byte ConfigQueryMCU = 3;
-        internal const byte ConfigQueryVersion = 4;
-
-        internal const byte ConfigMCUTeensyLC = 1;
-        internal const byte ConfigMCUTeensy3_2 = 2;
-
         internal const byte ConfigModulePWMTimer = 1;
         internal const byte ConfigModulePWMChannel = 2;
 

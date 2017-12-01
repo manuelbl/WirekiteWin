@@ -221,8 +221,15 @@ namespace Codecrete.Wirekite.Test.UI
 
             if (useSPIBoard)
             {
-                //_spiPort = _device.ConfigureSPIMaster(20, 21, WirekiteDevice.InvalidPort, 1000000, SPIAttributes.Default);
-                _spiPort = _device.ConfigureSPIMaster(14, 11, WirekiteDevice.InvalidPortId, 12000000, SPIAttributes.Default);
+                if (_device.GetBoardInfo(BoardInfo.Board) == WirekiteDevice.BoardTeensyLC)
+                {
+                    _spiPort = _device.ConfigureSPIMaster(20, 21, WirekiteDevice.InvalidPortId, 2000000, SPIAttributes.Default);
+                }
+                else
+                {
+                    _device.ConfigureFlowControl(memorySize: 20000, maxOutstandingRequests: 100);
+                    _spiPort = _device.ConfigureSPIMaster(14, 11, WirekiteDevice.InvalidPortId, 20000000, SPIAttributes.Default);
+                }
                 _colorTFT = new ColorTFT(_device, _spiPort, 6, 4, 5);
 
                 StartColorShow();

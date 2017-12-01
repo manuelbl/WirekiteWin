@@ -172,7 +172,7 @@ namespace Codecrete.Wirekite.Test.UI
 
         private void SendCommand(byte command, byte[] data)
         {
-            if (device.IsClosed())
+            if (device.IsClosed)
                 return;
 
             // select command mode

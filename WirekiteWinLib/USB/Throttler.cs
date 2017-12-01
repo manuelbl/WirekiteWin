@@ -14,6 +14,14 @@ namespace Codecrete.Wirekite.Device.USB
     internal class Throttler
     {
         private int memorySize = 4200;
+        private int occupiedSize = 0;
+        private int maxOutstandingRequests = 20;
+        private int outstandingRequests = 0;
+        private readonly object available = new object();
+        private Dictionary<UInt16, UInt16> requests = new Dictionary<UInt16, UInt16>();
+        private bool isDestroyed = false;
+
+
         public int MemorySize
         {
             get
@@ -33,9 +41,7 @@ namespace Codecrete.Wirekite.Device.USB
             }
         }
 
-        private int occupiedSize = 0;
 
-        private int maxOutstandingRequests = 20;
         public int MaxOutstandingRequests
         {
             get
@@ -55,11 +61,19 @@ namespace Codecrete.Wirekite.Device.USB
             }
         }
 
-        private int outstandingRequests = 0;
-        private readonly object available = new object();
-        private Dictionary<UInt16, UInt16> requests = new Dictionary<UInt16, UInt16>();
-        private bool isDestroyed = false;
 
+        public void Configure(int memSize, int maxRequests)
+        {
+            lock (available)
+            {
+                int oldMemorySize = memorySize;
+                memorySize = memSize;
+                int oldMaxOutstandingRequest = maxOutstandingRequests;
+                maxOutstandingRequests = maxRequests;
+                if (memorySize > oldMemorySize || maxOutstandingRequests > oldMaxOutstandingRequest)
+                    Monitor.PulseAll(available);
+            }
+        }
 
         internal void WaitUntilAvailable(UInt16 requestId, UInt16 requiredMemSize)
         {
