@@ -153,7 +153,7 @@ namespace Codecrete.Wirekite.Device
         /// </remarks>
         /// <param name="port">the SPI port ID</param>
         /// <param name="data">the data to transmit</param>
-        /// <param name="chipSelect">the digital output port ID to use as chip select (or <see cref="InvalidPort"/> if not used)</param>
+        /// <param name="chipSelect">the digital output port ID to use as chip select (or <see cref="InvalidPortId"/> if not used)</param>
         /// <returns>the number of sent bytes</returns>
         public int TransmitOnSPIPort(int port, byte[] data, int chipSelect)
         {
@@ -185,7 +185,7 @@ namespace Codecrete.Wirekite.Device
         /// </remarks>
         /// <param name="port">the SPI port ID</param>
         /// <param name="data">the data to transmit</param>
-        /// <param name="chipSelect">the digital output port ID to use as chip select (or <see cref="InvalidPort"/> if not used)</param>
+        /// <param name="chipSelect">the digital output port ID to use as chip select (or <see cref="InvalidPortId"/> if not used)</param>
         public void SubmitOnSPIPort(int port, byte[] data, int chipSelect)
         {
             Port p = _ports.GetPort(port);
@@ -233,7 +233,7 @@ namespace Codecrete.Wirekite.Device
         /// </para>
         /// <param name="port">the SPI port ID</param>
         /// <param name="length">the number of bytes of data requested from the slave</param>
-        /// <param name="chipSelect">the digital output port ID to use as chip select (or <see cref="InvalidPort"/> if not used)</param>
+        /// <param name="chipSelect">the digital output port ID to use as chip select (or <see cref="InvalidPortId"/> if not used)</param>
         /// <param name="mosiValue">byte value sent on MOSI signal during reading</param>
         /// <returns>the received data or <c>null</c> if it fails</returns>
         public byte[] RequestOnSPIPort(int port, int length, int chipSelect, int mosiValue = 0xff)
@@ -279,7 +279,7 @@ namespace Codecrete.Wirekite.Device
         /// </para>
         /// <param name="port">the SPI port ID</param>
         /// <param name="data"> data to transmit</param>
-        /// <param name="chipSelect">digital output port ID to use as chip select (or <see cref="InvalidPort"/> if not used)</param>
+        /// <param name="chipSelect">digital output port ID to use as chip select (or <see cref="InvalidPortId"/> if not used)</param>
         /// <returns>received data or <c>null</c> if it fails</returns>
         public byte[] TransmitAndRequestOnSPIPort(int port, byte[] data, int chipSelect)
         {

@@ -357,12 +357,32 @@ namespace Codecrete.Wirekite.Device
         }
 
 
+        /// <summary>
+        /// Configures the flow control of data intensive ports (I2C and SPI)
+        /// </summary>
+        /// <remarks>
+        /// The Wirekite microcontrollers have limited memory to buffer commands and
+        /// store large packets sent or received on I2C and SPI. In order to avoid
+        /// overrunning the memory, this library controls the flow of commands and
+        /// blocks new commans until sufficient memory is available for exection.
+        /// A client can continuously send and receive I2C and SPI packages and will
+        /// automatically be throttled to the speed the Wirekite can sustain.
+        /// Flow control combined with the buffering in the Wirekite allows to
+        /// achieve maximum speed.
+        /// </remarks>
+        /// <param name="memorySize">The amount of memory available on the Wirekite board for buffering</param>
+        /// <param name="maxOutstandingRequests">maximum number of requests that can be outstanding</param>
         public void ConfigureFlowControl(int memorySize, int maxOutstandingRequests)
         {
             _throttler.Configure(memorySize, maxOutstandingRequests);
         }
 
 
+        /// <summary>
+        /// Queries information about the connected Wirekite board.
+        /// </summary>
+        /// <param name="boardInfo">information item to query</param>
+        /// <returns>value of the information item</returns>
         public int GetBoardInfo(BoardInfo boardInfo)
         {
             ConfigRequest request = new ConfigRequest
