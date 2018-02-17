@@ -6,6 +6,7 @@
  */
 
 using System;
+using System.Diagnostics;
 
 namespace Codecrete.Wirekite.Device.Messages
 {
@@ -53,6 +54,15 @@ namespace Codecrete.Wirekite.Device.Messages
             WriteUInt32(buf, offset + 12, Value1);
             if (Data != null)
                 Array.Copy(Data, 0, buf, offset + 16, Data.Length);
+        }
+
+        public override void Dump()
+        {
+            base.Dump();
+            Debug.WriteLine("Body   - action: {0:X2}, attr1: {1:X2}, attr2: {2:X4}, value: {3:X8}",
+                Action, ActionAttribute1, ActionAttribute2, Value1);
+            if (Data != null)
+                DumpData(Data);
         }
     }
 }

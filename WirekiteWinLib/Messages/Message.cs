@@ -6,7 +6,7 @@
  */
 
 using System;
-
+using System.Diagnostics;
 
 namespace Codecrete.Wirekite.Device.Messages
 {
@@ -69,5 +69,31 @@ namespace Codecrete.Wirekite.Device.Messages
             UInt32 b3 = buf[offset + 3];
             return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0;
         }
+
+        public virtual void Dump()
+        {
+            Debug.WriteLine("Header - size: {0:X4}, type: {1:X2}, port ID: {2:X4}, request ID: {3:X4}",
+                MessageSize, MessageType, PortId, RequestId);
+        }
+
+        internal void DumpData(byte[] data)
+        {
+            Debug.WriteLine("Data   - {0}", BinaryDataToHex(data), null);
+        }
+
+        static string BinaryDataToHex(byte[] bytes)
+        {
+            int len = bytes.Length;
+            char[] c = new char[len * 2];
+            for (int i = 0; i < len; i++)
+            {
+                int b = bytes[i] >> 4;
+                c[i * 2] = (char)(55 + b + (((b - 10) >> 31) & -7));
+                b = bytes[i] & 0xF;
+                c[i * 2 + 1] = (char)(55 + b + (((b - 10) >> 31) & -7));
+            }
+            return new string(c);
+        }
+
     }
 }

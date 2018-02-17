@@ -274,12 +274,14 @@ namespace Codecrete.Wirekite.Device
             {
                 ConfigResponse response = new ConfigResponse();
                 response.Read(data, offset);
+                //response.Dump();
                 if (_deviceState == DeviceState.Ready || response.RequestId == 0xffff)
                     HandleConfigResponse(response);
             }
             else if (messageType == Message.MessageTypePortEvent)
             {
                 PortEvent evt = new PortEvent();
+                //evt.Dump();
                 evt.Read(data, offset);
                 if (_deviceState == DeviceState.Ready)
                     HandlePortEvent(evt);
@@ -415,6 +417,8 @@ namespace Codecrete.Wirekite.Device
 
         private void WriteMessage(Message message)
         {
+            //message.Dump();
+
             int messageSize = message.MessageSize;
             byte[] buffer = new byte[messageSize];
             message.Write(buffer, 0);

@@ -139,7 +139,7 @@ namespace Codecrete.Wirekite.Device
         /// <param name="value">the output value (true for high, false for low)</param>
         public void WriteDigitalPin(int port, bool value)
         {
-            WriteDigitalPinSynchronizedWithSPI(port, value, InvalidPortId);
+            WriteDigitalPinSynchronizedWithSPI(port, value, 0);
         }
 
 
@@ -165,7 +165,7 @@ namespace Codecrete.Wirekite.Device
                 ActionAttribute2 = (UInt16)spiPort
             };
 
-            SubmitPortRequest(request, spiPort != InvalidPortId);
+            SubmitPortRequest(request, spiPort != 0);
         }
 
         /// <summary>

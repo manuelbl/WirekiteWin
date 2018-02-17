@@ -23,7 +23,8 @@ namespace Codecrete.Wirekite.Test.UI
     {
         private const bool useLEDBoard = false;
         private const bool useI2CBoard = false;
-        private const bool useSPIBoard = true;
+        private const bool useSpiTFTBoard = false;
+        private const bool useSpiRFBoard = true;
         private const bool hasBuiltInLED = true;
         
         private WirekiteDevice _device;
@@ -63,6 +64,7 @@ namespace Codecrete.Wirekite.Test.UI
 
         private int _spiPort;
         private ColorTFT _colorTFT;
+        private RF24Radio _radio;
 
 
         public MainWindow()
@@ -219,20 +221,46 @@ namespace Codecrete.Wirekite.Test.UI
                 StartOLEDShow();
             }
 
-            if (useSPIBoard)
+            if (useSpiTFTBoard)
             {
                 if (_device.GetBoardInfo(BoardInfo.Board) == WirekiteDevice.BoardTeensyLC)
                 {
-                    _spiPort = _device.ConfigureSPIMaster(20, 21, WirekiteDevice.InvalidPortId, 2000000, SPIAttributes.Default);
+                    _spiPort = _device.ConfigureSPIMaster(20, 21, WirekiteDevice.InvalidPortId, 16000000, SPIAttributes.Default);
                 }
                 else
                 {
                     _device.ConfigureFlowControl(memorySize: 20000, maxOutstandingRequests: 100);
-                    _spiPort = _device.ConfigureSPIMaster(14, 11, WirekiteDevice.InvalidPortId, 20000000, SPIAttributes.Default);
+                    _spiPort = _device.ConfigureSPIMaster(14, 11, WirekiteDevice.InvalidPortId, 18000000, SPIAttributes.Default);
                 }
                 _colorTFT = new ColorTFT(_device, _spiPort, 6, 4, 5);
 
                 StartColorShow();
+            }
+
+            if (useSpiRFBoard)
+            {
+                if (_device.GetBoardInfo(BoardInfo.Board) == WirekiteDevice.BoardTeensyLC)
+                {
+                    _spiPort = _device.ConfigureSPIMaster(20, 21, 5, 10000000, SPIAttributes.Default);
+                }
+                else
+                {
+                    _device.ConfigureFlowControl(memorySize: 20000, maxOutstandingRequests: 100);
+                    _spiPort = _device.ConfigureSPIMaster(14, 11, WirekiteDevice.InvalidPortId, 10000000, SPIAttributes.Default);
+                }
+                _radio = new RF24Radio(_device, _spiPort, 14, 15);
+                _radio.InitModule();
+                _radio.RFChannel = 0x52;
+                _radio.AutoAck = false;
+                _radio.OutputPower = RF24Radio.RFOutputPower.Low;
+
+                _radio.ConfigureIRQPin(4, 10, PacketReceived);
+
+                _radio.OpenTransmitPipe(0x389f30cc1b);
+                _radio.OpenReceivePipe(1, 0x38a8bb7201);
+                _radio.StartListening();
+
+                _radio.DebugRegisters();
             }
         }
 
@@ -370,6 +398,19 @@ namespace Codecrete.Wirekite.Test.UI
                 if (offset >= 7 * 54)
                     offset = 0;
             }
+        }
+
+
+        private void PacketReceived(RF24Radio radio, int pipe, byte[] packet)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                analogStick.XDirection = ((double)(packet[0] - 127)) / 128;
+                analogStick.YDirection = ((double)(packet[1] - 128)) / 128;
+                bool upperButton = packet[2] != 0;
+                bool lowerButton = packet[3] != 0;
+                analogStick.Foreground = upperButton || lowerButton ? _stickPressedColor : _stickReleasedColor;
+            });
         }
 
 

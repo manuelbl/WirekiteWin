@@ -6,7 +6,7 @@
  */
 
 using System;
-
+using System.Diagnostics;
 
 namespace Codecrete.Wirekite.Device.Messages
 {
@@ -44,6 +44,13 @@ namespace Codecrete.Wirekite.Device.Messages
             WriteUInt32(buf, 12, Value1);
             WriteUInt16(buf, 16, PortAttributes1);
             WriteUInt16(buf, 18, PortAttributes2);
+        }
+
+        public override void Dump()
+        {
+            base.Dump();
+            Debug.WriteLine("Body   - action: {0:X2}, port type: {1:X2}, pin config: {2:X4}, value: {3:X8}, attr 1: {4:X4}, attr 2: {5:X4}",
+                Action, PortType, PinConfig, Value1, PortAttributes1, PortAttributes2);
         }
     }
 }

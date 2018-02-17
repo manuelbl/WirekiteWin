@@ -6,7 +6,7 @@
  */
 
 using System;
-
+using System.Diagnostics;
 
 namespace Codecrete.Wirekite.Device.Messages
 {
@@ -41,6 +41,15 @@ namespace Codecrete.Wirekite.Device.Messages
         internal override void Write(byte[] buf, int offset)
         {
             throw new NotImplementedException();
+        }
+
+        public override void Dump()
+        {
+            base.Dump();
+            Debug.WriteLine("Body   - event: {0:X2}, attr1: {1:X2}, attr2: {2:X4}, value: {3:X8}",
+                Event, EventAttribute1, EventAttribute2, Value1);
+            if (Data != null)
+                DumpData(Data);
         }
     }
 }

@@ -8,7 +8,7 @@
 using Codecrete.Wirekite.Device.Messages;
 using Codecrete.Wirekite.Device.USB;
 using System;
-
+using System.Diagnostics;
 
 namespace Codecrete.Wirekite.Device
 {
@@ -161,7 +161,7 @@ namespace Codecrete.Wirekite.Device
             if (p == null)
                 throw new WirekiteException(String.Format("Invalid port ID {0}", port));
 
-            UInt16 requestId = SubmitSPITx(port, data, chipSelect);
+            UInt16 requestId = SubmitSPITx(port, data, chipSelect, Message.PortActionTxData);
 
             PortEvent response = _pendingRequests.WaitForResponse(requestId) as PortEvent;
             p.LastSample = response.EventAttribute1; // status code
@@ -192,16 +192,16 @@ namespace Codecrete.Wirekite.Device
             if (p == null)
                 throw new WirekiteException(String.Format("Invalid port ID {0}", port));
 
-            SubmitSPITx(port, data, chipSelect);
+            SubmitSPITx(port, data, chipSelect, Message.PortActionTxData);
         }
 
 
-        private UInt16 SubmitSPITx(int port, byte[] data, int chipSelect)
+        private UInt16 SubmitSPITx(int port, byte[] data, int chipSelect, byte action)
         {
             PortRequest request = new PortRequest
             {
                 PortId = (UInt16)port,
-                Action = Message.PortActionTxData,
+                Action = action,
                 Data = data,
                 ActionAttribute2 = (UInt16)chipSelect,
                 RequestId = _ports.NextRequestId()
@@ -210,6 +210,88 @@ namespace Codecrete.Wirekite.Device
             WaitUntilAvailable(request);
             WriteMessage(request);
             return request.RequestId;
+        }
+
+
+        /// <summary>
+        /// Request data from an SPI slave
+        /// </summary>
+        /// <para>
+        /// The operation performs a complete SPI transaction, i.e. enables the clock for the duration of
+        /// transation and receives the data.
+        /// </para>
+        /// <para>
+        /// The operation is executed sychnronously, i.e.the call blocks until the
+        /// transaction has been completed or has failed. If the transaction fails,
+        /// use <see cref="GetLastSPIResult(int)"/> to retrieve the reason.
+        /// </para>
+        /// <para>
+        /// SPI is a full-duplex protocol at all times. Unless they use additional connections, slaves
+        /// cannot distinguish between read and write transactions.
+        /// This member functions send a configurable value on the MOSI line during the read.
+        /// Default value is 0xff.
+        /// </para>
+        /// <param name="port">the SPI port ID</param>
+        /// <param name="length">the number of bytes of data requested from the slave</param>
+        /// <param name="chipSelect">the digital output port ID to use as chip select (or <see cref="InvalidPort"/> if not used)</param>
+        /// <param name="mosiValue">byte value sent on MOSI signal during reading</param>
+        /// <returns>the received data or <c>null</c> if it fails</returns>
+        public byte[] RequestOnSPIPort(int port, int length, int chipSelect, int mosiValue = 0xff)
+        {
+            Port p = _ports.GetPort(port);
+            if (p == null)
+                throw new WirekiteException(String.Format("Invalid port ID {0}", port));
+
+            PortRequest request = new PortRequest
+            {
+                PortId = (UInt16)port,
+                Action = Message.PortActionRxData,
+                ActionAttribute1 = (byte)mosiValue,
+                ActionAttribute2 = (UInt16)chipSelect,
+                Value1 = (uint)length,
+                RequestId = _ports.NextRequestId()
+            };
+
+            WaitUntilAvailable(request);
+            WriteMessage(request);
+
+            PortEvent response = _pendingRequests.WaitForResponse(request.RequestId) as PortEvent;
+            p.LastSample = response.EventAttribute1; // status code
+            return response.Data;
+        }
+
+
+        /// <summary>
+        /// Transmit and request data from an SPI slave
+        /// </summary>
+        /// <para>
+        /// The operations is performed in a full-duplex fashion, i.e. the data is transmitted and received at
+        /// the same time. For that reason, the number of received bytes equals the number of transmitted bytes.
+        /// </para>
+        /// <para>
+        /// The operation performs a complete SPI transaction, i.e.enables the clock for the duration of
+        /// transation and transmits and receives the data.
+        /// </para>
+        /// <para>
+        /// The operation is executed sychnronously, i.e. the call blocks until the
+        /// transaction has been completed or has failed. If the transaction fails,
+        /// use <see cref="GetLastSPIResult(int)"/> to retrieve the reason.
+        /// </para>
+        /// <param name="port">the SPI port ID</param>
+        /// <param name="data"> data to transmit</param>
+        /// <param name="chipSelect">digital output port ID to use as chip select (or <see cref="InvalidPort"/> if not used)</param>
+        /// <returns>received data or <c>null</c> if it fails</returns>
+        public byte[] TransmitAndRequestOnSPIPort(int port, byte[] data, int chipSelect)
+        {
+            Port p = _ports.GetPort(port);
+            if (p == null)
+                throw new WirekiteException(String.Format("Invalid port ID {0}", port));
+
+            UInt16 requestId = SubmitSPITx(port, data, chipSelect, Message.PortActionTxNRxData);
+
+            PortEvent response = _pendingRequests.WaitForResponse(requestId) as PortEvent;
+            p.LastSample = response.EventAttribute1; // status code
+            return response.Data;
         }
 
 
@@ -223,6 +305,10 @@ namespace Codecrete.Wirekite.Device
             {
                 _throttler.RequestCompleted(evt.RequestId);
                 _pendingRequests.PutResponse(evt.RequestId, evt);
+            }
+            else
+            {
+                Debug.WriteLine("No request id");
             }
         }
 
