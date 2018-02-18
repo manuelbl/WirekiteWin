@@ -24,8 +24,8 @@ namespace Codecrete.Wirekite.Test.UI
     {
         private const bool useLEDBoard = false;
         private const bool useI2CBoard = false;
-        private const bool useSpiTFTBoard = true;
-        private const bool useSpiRFBoard = false;
+        private const bool useSpiTFTBoard = false;
+        private const bool useSpiRFBoard = true;
         private const bool hasBuiltInLED = true;
         
         private WirekiteDevice _device;
@@ -407,6 +407,9 @@ namespace Codecrete.Wirekite.Test.UI
 
         private void PacketReceived(RF24Radio radio, int pipe, byte[] packet)
         {
+            if (_isClosing)
+                return;
+
             Dispatcher.Invoke(() =>
             {
                 analogStick.XDirection = ((double)(packet[0] - 127)) / 128;
@@ -422,7 +425,7 @@ namespace Codecrete.Wirekite.Test.UI
         {
             try
             {
-                while (true)
+                while (!_isClosing)
                 {
                     Thread.Sleep(400);
 
@@ -471,5 +474,12 @@ namespace Codecrete.Wirekite.Test.UI
             Dispose(true);
         }
         #endregion
+
+        private bool _isClosing = false;
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _isClosing = true;
+        }
     }
 }

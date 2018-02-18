@@ -6,7 +6,7 @@
         xmlns:wk="clr-namespace:Codecrete.Wirekite.Test.UI"
         xmlns:local="clr-namespace:WirekiteWinTest"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="350" Width="525" Closing="Window_Closing">
     <Grid>
         <CheckBox x:Name="redCheckBox" Content="Red" HorizontalAlignment="Left" Margin="343,46,0,0" VerticalAlignment="Top" Checked="LedCheckBox_Changed" Unchecked="LedCheckBox_Changed"/>
         <CheckBox x:Name="orangeCheckBox" Content="Orange" HorizontalAlignment="Left" Margin="343,66,0,0" VerticalAlignment="Top" Checked="LedCheckBox_Changed" Unchecked="LedCheckBox_Changed"/>
