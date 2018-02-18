@@ -7,6 +7,7 @@
 
 using Codecrete.Wirekite.Device;
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,8 +24,8 @@ namespace Codecrete.Wirekite.Test.UI
     {
         private const bool useLEDBoard = false;
         private const bool useI2CBoard = false;
-        private const bool useSpiTFTBoard = false;
-        private const bool useSpiRFBoard = true;
+        private const bool useSpiTFTBoard = true;
+        private const bool useSpiRFBoard = false;
         private const bool hasBuiltInLED = true;
         
         private WirekiteDevice _device;
@@ -64,7 +65,9 @@ namespace Codecrete.Wirekite.Test.UI
 
         private int _spiPort;
         private ColorTFT _colorTFT;
+
         private RF24Radio _radio;
+        private Thread _radioThread;
 
 
         public MainWindow()
@@ -225,7 +228,7 @@ namespace Codecrete.Wirekite.Test.UI
             {
                 if (_device.GetBoardInfo(BoardInfo.Board) == WirekiteDevice.BoardTeensyLC)
                 {
-                    _spiPort = _device.ConfigureSPIMaster(20, 21, WirekiteDevice.InvalidPortId, 16000000, SPIAttributes.Default);
+                    _spiPort = _device.ConfigureSPIMaster(14, 11, WirekiteDevice.InvalidPortId, 16000000, SPIAttributes.Default);
                 }
                 else
                 {
@@ -239,28 +242,23 @@ namespace Codecrete.Wirekite.Test.UI
 
             if (useSpiRFBoard)
             {
-                if (_device.GetBoardInfo(BoardInfo.Board) == WirekiteDevice.BoardTeensyLC)
-                {
-                    _spiPort = _device.ConfigureSPIMaster(20, 21, 5, 10000000, SPIAttributes.Default);
-                }
-                else
-                {
+                if (_device.GetBoardInfo(BoardInfo.Board) == WirekiteDevice.BoardTeensy3_2)
                     _device.ConfigureFlowControl(memorySize: 20000, maxOutstandingRequests: 100);
-                    _spiPort = _device.ConfigureSPIMaster(14, 11, WirekiteDevice.InvalidPortId, 10000000, SPIAttributes.Default);
-                }
-                _radio = new RF24Radio(_device, _spiPort, 14, 15);
+                _spiPort = _device.ConfigureSPIMaster(14, 11, 12, 10000000, SPIAttributes.Default);
+                _radio = new RF24Radio(_device, _spiPort, 18, 19);
                 _radio.InitModule();
                 _radio.RFChannel = 0x52;
                 _radio.AutoAck = false;
                 _radio.OutputPower = RF24Radio.RFOutputPower.Low;
 
-                _radio.ConfigureIRQPin(4, 10, PacketReceived);
+                _radio.ConfigureIRQPin(10, 10, PacketReceived);
 
                 _radio.OpenTransmitPipe(0x389f30cc1b);
                 _radio.OpenReceivePipe(1, 0x38a8bb7201);
                 _radio.StartListening();
 
-                _radio.DebugRegisters();
+                _radioThread = new Thread(SendTime);
+                _radioThread.Start();
             }
         }
 
@@ -288,6 +286,12 @@ namespace Codecrete.Wirekite.Test.UI
             {
                 _ammeterTimer.Dispose();
                 _ammeterTimer = null;
+            }
+            if (_radioThread != null)
+            {
+                _radioThread.Interrupt();
+                _radioThread.Join();
+                _radioThread = null;
             }
         }
 
@@ -411,6 +415,33 @@ namespace Codecrete.Wirekite.Test.UI
                 bool lowerButton = packet[3] != 0;
                 analogStick.Foreground = upperButton || lowerButton ? _stickPressedColor : _stickReleasedColor;
             });
+        }
+
+
+        public void SendTime()
+        {
+            try
+            {
+                while (true)
+                {
+                    Thread.Sleep(400);
+
+                    string text = DateTime.Now.ToString("T");
+                    byte[] textBytes = Encoding.UTF8.GetBytes(text);
+                    byte[] payload = new byte[textBytes.Length + 1]; // add trailing 0
+                    Array.Copy(textBytes, 0, payload, 0, textBytes.Length);
+
+                    _radio.StopListening();
+                    Thread.Sleep(100);
+                    _radio.Transmit(payload);
+                    Thread.Sleep(100);
+                    _radio.StartListening();
+                }
+            }
+            catch (ThreadInterruptedException e)
+            {
+                // done
+            }
         }
 
 

@@ -1,8 +1,11 @@
 ﻿/*
  * Wirekite for Windows 
- * Copyright (c) 2017 Manuel Bleichenbacher
+ * Copyright (c) 2018 Manuel Bleichenbacher
  * Licensed under MIT License
  * https://opensource.org/licenses/MIT
+ * 
+ * This code is based on code in the Arduino RF24 library.
+ * Portions Copyright (c) 2011 J. Coliz <maniacbug@ymail.com>
  */
 
 using Codecrete.Wirekite.Device;
@@ -106,8 +109,6 @@ namespace Codecrete.Wirekite.Test.UI
 
         public void InitModule()
         {
-            DebugRegisters();
-
             // Reset CONFIG and enable 16-bit CRC.
             regConfig = RF24.CONFIG.EN_CRC | RF24.CONFIG.CRCO;
             WriteRegister(regConfig, Register.CONFIG);
@@ -148,8 +149,6 @@ namespace Codecrete.Wirekite.Test.UI
             // PTX should use only 22uA of power
             regConfig = (byte)(regConfig & ~RF24.CONFIG.PRIM_RX);
             WriteRegister(regConfig, Register.CONFIG);
-
-            DebugRegisters();
         }
 
 
@@ -532,7 +531,7 @@ namespace Codecrete.Wirekite.Test.UI
                             txQueueCount -= 1;
                             if (txQueueCount == 0)
                                 SetCE(false);
-                            Monitor.Pulse(txQueueCount);
+                            Monitor.Pulse(txQueueLock);
                         }
                     }
                     else if ((status & RF24.STATUS.MAX_RT) != 0)
